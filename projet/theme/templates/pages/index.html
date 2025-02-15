@@ -65,19 +65,31 @@
 </div>
   </div>
 </section>
-<section class ="w-full min-h-screen flex flex-row">
-  <div class="w-1/2  flex flex-col items-center justify-center bg-cover bg-center bg-fixed pl-3 md:px-58 py-8 text-center">
+<section class ="w-full min-h-screen flex flex-row"style="background-image: url('{% static "img/back6.png" %}'); background-size: cover;">
+  <div class="w-1/2  flex flex-col items-center justify-center bg-cover bg-center bg-fixed pl-3 md:px-58 py-8 text-center" >
     
-      <h2 class="block mb-7 text-5xl font-semibold text-black">Comment elle fonctionne ? </h2>
-      <h3 class="text-2x font-light text-black tracking-wide mt-2 mb-6">IQlevel est une platforme d'apprentissage en ligne fournie par des étudiants pour les étudiants <br> pour mieux apprendre et valider Leurs travailles</h3>
-      <a href="#" class="px-6 py-3 bg-transparent text-black font-semibold rounded-full flex items-center space-x-2 shadow-md hover:bg-white hover:text-gray-900 transition duration-300">
-        <span>Créer un Compte</span>
-        <span>➤</span>
-    </a>
+      <h2 class="block mb-7 text-5xl font-semibold text-white">Comment elle fonctionne ? </h2>
+      <h3 class="text-2x font-light text-white tracking-wide mt-2 mb-6">IQlevel est une platforme d'apprentissage en ligne fournie par des étudiants pour les étudiants <br> pour mieux apprendre et valider Leurs travailles</h3>
+      
     </div>
     <div class="image w-1/2 min-h-screen flex items-center justify-center">
-      <img src="{% static 'img/back.png' %}" alt="illustration">
+      <img class ="pr-7" src="{% static 'img/index.jpg' %}" alt="illustration">
   </div>
   </section>
+  <!-- contact start -->
+<section id="contact" class="flex flex-col items-center py-20 px-10" style="background-image: url('{% static "img/back8.png" %}'); background-size: cover;">
+  <h1 class="font-bold text-3xl text-white mb-8 text-center">CONTACTEZ NOUS!</h1>
+  <div class="w-full md:w-1/2 bg-white rounded-lg p-6 shadow-md">
+      <form action="#" class="flex flex-col space-y-4">
+          <label for="name" class="font-semibold">Nom:</label>
+          <input type="text" name="name" id="name" class="rounded-xl h-11 p-2 shadow-inner shadow-gray-400 focus:outline-none" placeholder="Entrer votre nom" required>
+          <label for="email" class="font-semibold">Email:</label>
+          <input type="email" name="email" id="email" class="rounded-xl h-11 p-2 shadow-inner shadow-gray-400 focus:outline-none" placeholder="Entrer votre email" required>
+          <label for="message" class="font-semibold">Votre Message:</label>
+          <textarea name="message" id="message" class="rounded-xl h-[100px] md:h-auto p-2 shadow-inner shadow-gray-400 focus:outline-none" placeholder="Entrer votre message" required></textarea>
+          <input type="submit" class="button-custom" value = "Envoyer">
+      </form>
+  </div>
+</section>
 
 {% endblock%}
