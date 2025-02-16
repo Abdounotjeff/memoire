@@ -89,6 +89,17 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+#authentification user
+AUTH_USER_MODEL = 'documents.CustomUser'
+
+#email verification
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "jboy26539@gmail.com"  # Replace with your email
+EMAIL_HOST_PASSWORD = "2005*2005"  # Use an app password for security
 
 
 # Password validation
