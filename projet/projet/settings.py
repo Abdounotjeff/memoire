@@ -96,10 +96,13 @@ AUTH_USER_MODEL = 'documents.CustomUser'
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
+EMAIL_FROM = "jboy26539@gmail.com"
+EMAIL_HOST_USER = "jboy26539@gmail.com"  # Replace with your email
+EMAIL_HOST_PASSWORD = "need to be from google password"  # Use an app password for security
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "jboy26539@gmail.com"  # Replace with your email
-EMAIL_HOST_PASSWORD = "2005*2005"  # Use an app password for security
+PASSWORD_RESET_TIMEOUT = 3600
+
 
 
 # Password validation

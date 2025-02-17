@@ -8,8 +8,8 @@
 </head>
 <body class="flex items-center justify-center h-screen bg-gray-100">
     <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 class="text-2xl font-bold text-center text-gray-700 mb-4">Vérifier votre email</h2>
-        <p class="text-center text-gray-500 mb-6">Entrer le code de vérification envoyé par email.</p>
+        <h2 class="text-2xl font-bold text-center text-gray-700 mb-4">{{user}},Vérifier votre email</h2>
+        <p class="text-center text-gray-500 mb-6">Nous avons vous envoyés un Lien sur votre Email <br> {{to_email}},<br> Vérifier votre inbox SVP</p>
 
         <form method="POST" class="space-y-4">
             {% csrf_token %}

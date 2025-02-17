@@ -11,41 +11,26 @@ from .models import EmailVerification
 import secrets
 from django.core.mail import send_mail
 
+User = get_user_model()  # Get the CustomUser model
+
 # Create your views here.
 
 def index(request):
     return render(request, 'pages/index.html')
 
-def send_verification_email(user):
-    code = secrets.token_hex(3)  # Generate a random code
-    EmailVerification.objects.create(user=user, code=code)  # Save in DB
+def activateEmail(request, user, to_email):
+    messages.success(request, f'Account was created for {user}. Please verify your email at {to_email}.')
 
-    subject = "Verify Your Email"
-    message = f"Hello {user.username},\n\nYour verification code is: {code}\n\nEnter this code to verify your identity."
-    from_email = "your_email@gmail.com"
-    recipient_list = [user.email]
-
-    send_mail(subject, message, from_email, recipient_list)
-
-
-User = get_user_model()  # Get the CustomUser model
 
 def registerPage(request):
     if request.method == 'POST':
         form = CreateUserForm(request.POST)
         if form.is_valid():
-            user = form.save()  # This already creates the user
-            
-            # Create an EmailVerification entry
-            verification_code = secrets.token_hex(3)  # Generate a random 6-character hex code
-            EmailVerification.objects.create(user=user, code=verification_code)
-            
-            # Send the verification email
-            send_verification_email(user)
-
-            # Success message
-            messages.success(request, f'Account was created for {user.username}. Please verify your email.')
-            return redirect('loginPage')
+            user = form.save(commit=False) 
+            user.is_active=False
+            user.save() 
+            activateEmail(request, user, form.cleaned_data.get('email'))
+            return redirect('index')
         else:
             print(form.errors)  # Debugging: Prints form errors in console
             messages.error(request, 'Form validation failed. Please correct the errors.')
