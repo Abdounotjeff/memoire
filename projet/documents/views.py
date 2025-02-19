@@ -48,23 +48,38 @@ def activate(request, uidb64, token):
 def activateEmail(request, user, to_email):
     mail_subject = "Activate your user account."
     message = render_to_string("pages/user_email.html",{
-        'user':user.username,
+        'user':user,
         'domain': get_current_site(request).domain,
         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
         'token': account_activation_token.make_token(user),
         "protocol": 'http' 
     })
-    email = EmailMessage(mail_subject, message, to=[to_email])
-    if email.send():
-        messages.success(request, f'Account was created for {user}. Please verify your email at {to_email}.')
-    else:
-        messages.error(request, f'Something went wrong..., try verifying your email!')
 
     email = EmailMessage(mail_subject, message, to=[to_email], connection=get_connection())
     if email.send():
-        messages.success(request, f'Account was created for {user}. Please verify your email at {to_email}.')
+        messages.success(request, f'{user}. SVP vérifier votre email : {to_email}.')
     else:
-        messages.error(request, f'Something went wrong..., try verifying your email!')
+        messages.error(request, f'Something went wrong..., try verifying your email!') 
+
+
+def resend_verification(request):
+    email = request.session.get('pending_email')  # Get email from session
+
+    if not email:
+        messages.error(request, "Aucune adresse email trouvée. Inscrivez-vous d'abord.")
+        return redirect("registerPage")  # Redirect to registration if no email is found
+
+    try:
+        user = User.objects.get(email=email)
+        if user.is_active:
+            messages.info(request, "Ce compte est déjà activé.")
+        else:
+            activateEmail(request, user, user.email)
+            messages.success(request, "Un nouvel email de vérification a été envoyé !")
+    except User.DoesNotExist:
+        messages.error(request, "Aucun compte trouvé avec cet email.")
+
+    return render(request, "pages/verify_code.html", {"user_email": email})
 
 def registerPage(request):
     if request.method == 'POST':
@@ -73,8 +88,10 @@ def registerPage(request):
             user = form.save(commit=False) 
             user.is_active=False
             user.save() 
-            activateEmail(request, user, form.cleaned_data.get('email'))
-            return redirect('index')
+            email = form.cleaned_data.get('email')
+            request.session['pending_email'] = email  # Store email in session
+            activateEmail(request, user, email)
+            return redirect('activ')
         else:
             print(form.errors)  # Debugging: Prints form errors in console
             messages.error(request, 'Form validation failed. Please correct the errors.')
@@ -106,3 +123,9 @@ def loginPage(request):
 def logoutUser(request):
     logout(request)
     return redirect('loginPage')
+
+def activ(request):
+    return render(request, 'pages/verify_code.html')
+
+def Quiz(request):
+    return render(request, 'pages/Quiz.html')

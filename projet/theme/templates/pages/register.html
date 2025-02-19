@@ -15,7 +15,13 @@
         <img src="{% static 'img/space.jpg' %}" alt="">
     </div>
     <!-- pic end -->
-  
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
     <!-- form start -->
     <form method="POST" action="{% url 'registerPage' %}"  class="max-w-sm w-1/2 mx-auto">
         {% csrf_token %}
