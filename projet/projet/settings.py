@@ -43,6 +43,9 @@ TAILWIND_APP_NAME = 'theme'
 
 INSTALLED_APPS = [
     'documents.apps.DocumentsConfig',
+    'quizes.apps.QuizesConfig',
+    'questions.apps.QuestionsConfig',
+    'results.apps.ResultsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -150,6 +153,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'theme/static'),
+    os.path.join(BASE_DIR, 'quizes/static'),
 ]
 
 # Default primary key field type
