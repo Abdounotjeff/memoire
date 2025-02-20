@@ -23,4 +23,4 @@ class Quiz(models.Model):
         verbose_name_plural = "Quizes"
 
     def get_questions(self): #to get all question to the quiz
-        return self.question_set.all()
+        return self.question_set.all()[:self.number_of_questions]
