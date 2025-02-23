@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     modalBtns.forEach(modalBtn => {
         modalBtn.addEventListener("click", function () {
             console.log("Button clicked:", modalBtn);
-
+            const quizId = modalBtn.getAttribute("data-pk");
             const name = modalBtn.getAttribute("data-quiz");
             const numbQuestions = modalBtn.getAttribute("data-questions");
             const difficulty = modalBtn.getAttribute("data-difficulty");
@@ -29,6 +29,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     <li><strong>Durée :</strong> ${time} minutes</li>
                 </ul>
             `;
+            // Set the "Commencer" button's link dynamically
+            startButton.onclick = function () {
+                window.location.href = `/quizes/${quizId}/`;  // Adjust the URL structure as needed
+            };
         });
     });
 });
