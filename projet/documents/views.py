@@ -7,6 +7,10 @@ from django.forms import inlineformset_factory
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from .models import *
+from quizes.models import Quiz
+from results.models import Result
+from projetSubmission.models import ProjectSubmission
+from projetTask.models import ProjectSubmissionTask
 import secrets
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
@@ -16,6 +20,8 @@ from django.utils.encoding import force_bytes, force_str
 from .tokens import account_activation_token
 import ssl
 from django.core.mail import get_connection
+from django.db.models import Avg, Count, Sum
+
 
 
 User = get_user_model()  # Get the CustomUser model
@@ -127,5 +133,42 @@ def logoutUser(request):
 def activ(request):
     return render(request, 'pages/verify_code.html')
 
-def Quiz(request):
-    return render(request, 'pages/Quiz.html')
+# 📌 PROFESSOR DASHBOARD: Show Groups & Students' Grades
+def professor_dashboard(request):
+    professor = Professor.objects.get(user=request.user)
+    groups = professor.groups.all()
+
+    group_data = []
+
+    for group in groups:
+        students = Student.objects.filter(group=group)
+
+        student_data = []
+        for student in students:
+            # Fetch Quiz Scores (or 0 if not submitted)
+            quizzes = Quiz.objects.filter(groups=group)
+            quiz_scores = {quiz.id: 0 for quiz in quizzes}  # Default 0
+
+            for quiz in quizzes:
+                result = Result.objects.filter(student=student, quiz=quiz).first()
+                if result:
+                    quiz_scores[quiz.id] = result.score
+
+            # Fetch Project Scores (or 0 if not submitted)
+            projects = ProjectSubmissionTask.objects.filter(groups=group)
+            project_scores = {project.id: 0 for project in projects}  # Default 0
+
+            for project in projects:
+                submission = ProjectSubmission.objects.filter(student=student, task=project).first()
+                if submission:
+                    project_scores[project.id] = 100  # Example: Full credit if submitted
+
+            student_data.append({
+                "student": student,
+                "quiz_scores": quiz_scores,
+                "project_scores": project_scores,
+            })
+
+        group_data.append({"group": group, "students": student_data})
+
+    return render(request, "pages/professor_dashboard.html", {"group_data": group_data})

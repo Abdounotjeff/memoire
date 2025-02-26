@@ -10,18 +10,19 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('documents', '0001_initial'),
-        ('quizes', '0001_initial'),
+        ('groupe', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Result',
+            name='ProjectSubmissionTask',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('score', models.IntegerField()),
-                ('submitted_at', models.DateTimeField(auto_now_add=True)),
-                ('quiz', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='quizes.quiz')),
-                ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='documents.student')),
+                ('title', models.CharField(max_length=200)),
+                ('start_time', models.DateTimeField()),
+                ('end_time', models.DateTimeField()),
+                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='documents.professor')),
+                ('groups', models.ManyToManyField(to='groupe.group')),
             ],
         ),
     ]

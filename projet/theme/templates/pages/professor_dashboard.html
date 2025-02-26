@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Professor Dashboard</h2>
+
+{% for group in group_data %}
+    <h3>Group: {{ group.group.name }}</h3>
+    <table border="1">
+        <tr>
+            <th>Student Name</th>
+            {% for quiz in group.group.quiz_set.all %}
+                <th>{{ quiz.title }} (Quiz)</th>
+            {% endfor %}
+            {% for project in group.group.projectsubmissiontask_set.all %}
+                <th>{{ project.title }} (Project)</th>
+            {% endfor %}
+        </tr>
+
+        {% for student in group.students %}
+        <tr>
+            <td>{{ student.student.user.username }}</td>
+            {% for quiz_id, score in student.quiz_scores.items %}
+                <td>{{ score }}</td>
+            {% endfor %}
+            {% for project_id, score in student.project_scores.items %}
+                <td>{{ score }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+{% endfor %}
+
+{% endblock %}

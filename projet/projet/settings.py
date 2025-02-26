@@ -42,10 +42,14 @@ INTERNAL_IPS = [
 TAILWIND_APP_NAME = 'theme'
 
 INSTALLED_APPS = [
-    'documents.apps.DocumentsConfig',
-    'quizes.apps.QuizesConfig',
-    'questions.apps.QuestionsConfig',
-    'results.apps.ResultsConfig',
+    'documents',
+    'quizes',
+    'questions',
+    'results',
+    'groupe',
+    'projetSubmission.apps.ProjetsubmissionConfig',
+    'projetTask.apps.ProjettaskConfig',
+    'SessionAcademique.apps.SessionacademiqueConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
