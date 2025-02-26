@@ -7,12 +7,20 @@
 {% block scripts %}
     <script src="{% static 'scripts/QuizDetail.js' %}"></script>
 {% endblock scripts %}
-    
+
 {% block content %}
-    <h1>{{obj.name}}</h1>
-    <form id="quiz-form" method="GET">
+<div class="justify-between">
+    <div>
+        <h1>{{ obj.name }}</h1>
+        <p>Score to pass: {{ obj.required_score }}%</p>
+    </div>
+    <div id="timer-box"></div>
+    <form id="quiz-form" method="POST">  {# Changed from GET to POST #}
         {% csrf_token %}
-        <div id ="quiz-box"></div>
-        <button type="submit" class ="btn btn-primary mt-3" >Submit</button>
+        <div id="quiz-box"></div>
+        <button type="submit" class="btn btn-primary mt-3">Submit</button>
     </form>
+    <div id="score-box"></div>
+    <div id="result-box"></div>
+</div>
 {% endblock content %}
