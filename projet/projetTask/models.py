@@ -6,6 +6,7 @@ from django.utils.timezone import now
 
 class ProjectSubmissionTask(models.Model):
     title = models.CharField(max_length=200)
+    description = models.TextField(default="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat. Duis semper. Duis arcu massa, scelerisque vitae,")
     created_by = models.ForeignKey(Professor, on_delete=models.CASCADE)
     groups = models.ManyToManyField(Group)
     start_time = models.DateTimeField()

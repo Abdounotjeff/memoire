@@ -21,6 +21,14 @@ from .tokens import account_activation_token
 import ssl
 from django.core.mail import get_connection
 from django.db.models import Avg, Count, Sum
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from quizes.models import Quiz
+from questions.models import Question, Answer
+from .models import Professor
+from groupe.models import Group
+from django.utils.timezone import now
 
 
 
@@ -134,34 +142,33 @@ def activ(request):
     return render(request, 'pages/verify_code.html')
 
 # 📌 PROFESSOR DASHBOARD: Show Groups & Students' Grades
+@login_required
 def professor_dashboard(request):
     professor = Professor.objects.get(user=request.user)
     groups = professor.groups.all()
 
-    group_data = []
+    professor_quizzes = Quiz.objects.filter(created_by=professor)
+    professor_projects = ProjectSubmissionTask.objects.filter(created_by=professor)
 
+    group_data = []
     for group in groups:
         students = Student.objects.filter(group=group)
-
         student_data = []
-        for student in students:
-            # Fetch Quiz Scores (or 0 if not submitted)
-            quizzes = Quiz.objects.filter(groups=group)
-            quiz_scores = {quiz.id: 0 for quiz in quizzes}  # Default 0
 
+        for student in students:
+            quizzes = Quiz.objects.filter(groups=group)
+            quiz_scores = {quiz.id: 0 for quiz in quizzes}
             for quiz in quizzes:
                 result = Result.objects.filter(student=student, quiz=quiz).first()
                 if result:
                     quiz_scores[quiz.id] = result.score
 
-            # Fetch Project Scores (or 0 if not submitted)
             projects = ProjectSubmissionTask.objects.filter(groups=group)
-            project_scores = {project.id: 0 for project in projects}  # Default 0
-
+            project_scores = {project.id: 0 for project in projects}
             for project in projects:
                 submission = ProjectSubmission.objects.filter(student=student, task=project).first()
                 if submission:
-                    project_scores[project.id] = 100  # Example: Full credit if submitted
+                    project_scores[project.id] = 100  
 
             student_data.append({
                 "student": student,
@@ -171,4 +178,12 @@ def professor_dashboard(request):
 
         group_data.append({"group": group, "students": student_data})
 
-    return render(request, "pages/professor_dashboard.html", {"group_data": group_data})
+    context = {
+        "group_data": group_data,
+        "professor_quizzes": professor_quizzes,
+        "professor_projects": professor_projects,
+    }
+
+    return render(request, "pages/professor_dashboard.html", context)
+
+

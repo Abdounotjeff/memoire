@@ -19,12 +19,11 @@ class CustomUser(AbstractUser):
     
     def is_professor(self):
         return self.role == 'professor'
-    
-    
+
     
 class Student(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, related_name="students")
     
     def __str__(self):
         return self.user.username
@@ -32,7 +31,7 @@ class Student(models.Model):
 
 class Professor(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    groups = models.ManyToManyField(Group)
+    groups = models.ManyToManyField(Group, related_name="professors")
 
     def __str__(self):
         return self.user.username

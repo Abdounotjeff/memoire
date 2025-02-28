@@ -4,6 +4,9 @@ from .models import Quiz
 from django.http import JsonResponse
 from questions.models import Question, Answer
 from results.models import Result
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .forms import QuizForm
 # Create your views here .
 
 class QuizListView(ListView):
@@ -72,3 +75,18 @@ def save_quiz_view(request, pk):
             return JsonResponse({'passed': True, 'score':score_ , 'results':results})
         else:
             return JsonResponse({'passed': False, 'score':score_ , 'results':results})
+        
+@login_required
+def create_quiz(request):
+    if request.user.role != "professor":
+        return redirect('index')  # Prevent students from accessing
+
+    if request.method == "POST":
+        form = QuizForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('quizzes')  # Redirect to quiz list
+    else:
+        form = QuizForm()
+
+    return render(request, 'quizes/createQuiz.html', {'form': form})

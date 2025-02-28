@@ -32,3 +32,5 @@ class CreateUserForm(UserCreationForm):
             'class': common_classes,
             'placeholder': "Confirmez votre mot de passe"
         })
+
+
