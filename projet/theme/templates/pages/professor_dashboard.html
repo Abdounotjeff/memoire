@@ -21,6 +21,9 @@
             </div>
             <div class="modal-body" id="modal-body-confirm"></div>
             <div class="modal-footer">
+                {% if request.user.role == "professor" %}
+                    <a id="editQuizBtn" href="#" class="btn btn-primary">Modifier Quiz</a>
+                {% endif %}
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
             </div>
         </div>
@@ -138,4 +141,5 @@
 {% if request.user.role == "professor" %}
     <a href="{% url 'create_quiz' %}" class="btn btn-primary">Create Quiz</a>
 {% endif %}
+
 {% endblock %}

@@ -21,17 +21,23 @@ document.addEventListener("DOMContentLoaded", function () {
     modalBtns.forEach(modalBtn => {
         modalBtn.addEventListener("click", function () {
             console.log("Quiz clicked:", modalBtn);
+            const id = modalBtn.getAttribute("data-pk");
             const name = modalBtn.getAttribute("data-quiz");
             const numbQuestions = modalBtn.getAttribute("data-questions");
             const difficulty = modalBtn.getAttribute("data-difficulty");
             const scoreToPass = modalBtn.getAttribute("data-pass");
             const time = modalBtn.getAttribute("data-time");
 
-            console.log("Quiz Data:", { name, numbQuestions, difficulty, scoreToPass, time });
-
+            console.log("Quiz Data:", { id, name, numbQuestions, difficulty, scoreToPass, time });
+            // ✅ Update the "Modifier Quiz" button inside the modal
+            let editBtn = document.getElementById("editQuizBtn");
+            if (editBtn) {
+                editBtn.href = `/edit-quiz/${id}/`; // Update link dynamically
+            }
             const content = `
                 <div class="h5 mb-3">Détails du Quiz: <strong>${name}</strong></div>
                 <ul>
+                    <li><strong>ID :</strong> ${id}</li>
                     <li><strong>Nombre de questions :</strong> ${numbQuestions}</li>
                     <li><strong>Difficulté :</strong> ${difficulty}</li>
                     <li><strong>Score à atteindre :</strong> ${scoreToPass}%</li>

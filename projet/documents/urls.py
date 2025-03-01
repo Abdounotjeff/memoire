@@ -11,5 +11,8 @@ urlpatterns = [
     path('activate/<uidb64>/<token>', views.activate, name='activate'),
     path('Quiz/', views.Quiz, name='Quiz'),
     path('professor/', views.professor_dashboard, name='professor'),
+    path('create-quiz/', views.create_quiz, name='create_quiz'),
+    path('edit-quiz/<int:quiz_id>/', views.edit_quiz, name='edit_quiz'),
+    path('delete-quiz/<int:quiz_id>/', views.delete_quiz, name='delete_quiz'),
     
 ]

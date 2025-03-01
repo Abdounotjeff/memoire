@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Quiz</title>
+    <script>
+        function addQuestionField() {
+            const container = document.getElementById("questions-container");
+            const questionDiv = document.createElement("div");
+            questionDiv.classList.add("question-item");
+            questionDiv.innerHTML = `
+                <input type="text" name="questions[]" placeholder="Enter question text" required>
+                <button type="button" onclick="removeQuestionField(this)">Remove</button>
+                <div class="answers-container"></div>
+                <button type="button" onclick="addAnswerField(this)">Add Answer</button>
+            `;
+            container.appendChild(questionDiv);
+        }
+        
+        function addAnswerField(button) {
+            const answerContainer = button.previousElementSibling;
+            const questionIndex = [...button.parentElement.parentElement.children].indexOf(button.parentElement);
+            const answerIndex = answerContainer.children.length;
+        
+            const answerDiv = document.createElement("div");
+            answerDiv.classList.add("answer-item");
+            answerDiv.innerHTML = `
+                <input type="text" name="answers[${questionIndex}][]" placeholder="Enter answer" required>
+                <input type="radio" name="correct_answers[${questionIndex}]" value="${answerIndex}" ${answerIndex === 0 ? 'checked' : ''}>
+            `;
+            answerContainer.appendChild(answerDiv);
+        }
+        
+        function removeQuestionField(button) {
+            button.parentElement.remove();
+        }
+    </script>
+</head>
+<body>
+    <h1>Edit Quiz</h1>
+    <form method="POST" action="{% url 'edit_quiz' quiz.id %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <h2>Questions & Answers</h2>
+        <div id="questions-container">
+            {% for question in quiz.question_set.all %}
+                <div class="question-item">
+                    <input type="text" name="questions[]" value="{{ question.text }}" required placeholder="Enter question">
+                    <button type="button" onclick="removeQuestionField(this)">Remove</button>
+
+                    <div class="answers-container">
+                        {% for answer in question.answers.all %}
+                            <div class="answer-item">
+                                <input type="text" name="answers[{{ forloop.parentloop.counter0 }}][]" value="{{ answer.text }}" required>
+                                <input type="radio" name="correct_answers[{{ forloop.parentloop.counter0 }}]" value="{{ forloop.counter0 }}" {% if answer.is_correct %}checked{% endif %}>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="button" onclick="addAnswerField(this)">Add Answer</button>
+                </div>
+            {% endfor %}
+        </div>
+        <button type="button" onclick="addQuestionField()">Add Question</button>
+
+        <br><br>
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <form id="deleteQuizForm" method="POST" action="{% url 'delete_quiz' quiz.id %}">
+        {% csrf_token %}
+        <button type="submit" style="background-color: red; color: white;">Delete Quiz</button>
+    </form>
+
+    <script>
+        document.getElementById("deleteQuizForm").addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevent immediate form submission
+
+            const confirmDelete = confirm("Are you sure you want to delete this quiz? This action cannot be undone!");
+            if (confirmDelete) {
+                this.submit(); // Submit the form if the user confirms
+            }
+        });
+    </script>
+</body>
+</html>

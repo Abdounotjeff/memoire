@@ -1,10 +1,83 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Quiz</title>
+    <script>
+        function addQuestionField() {
+            const container = document.getElementById("questions-container");
+            const questionDiv = document.createElement("div");
+            questionDiv.classList.add("question-item");
+            questionDiv.innerHTML = `
+                <input type="text" name="questions[]" placeholder="Enter question text" required>
+                <button type="button" onclick="removeQuestionField(this)">Remove</button>
+                <div class="answers-container"></div>
+                <button type="button" onclick="addAnswerField(this)">Add Answer</button>
+            `;
+            container.appendChild(questionDiv);
+        }
 
-{% block content %}
-<h2>Create a New Quiz</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-success">Create</button>
-</form>
-{% endblock %}
+        function addAnswerField(button) {
+            const answerContainer = button.previousElementSibling;
+            const questionIndex = [...button.parentElement.parentElement.children].indexOf(button.parentElement);
+            const answerIndex = answerContainer.children.length;
+
+            const answerDiv = document.createElement("div");
+            answerDiv.classList.add("answer-item");
+            answerDiv.innerHTML = `
+                <input type="text" name="answers[${questionIndex}][]" placeholder="Enter answer" required>
+                <input type="radio" name="correct_answers[${questionIndex}]" value="${answerIndex}" ${answerIndex === 0 ? 'checked' : ''}>
+            `;
+            answerContainer.appendChild(answerDiv);
+        }
+
+        function removeQuestionField(button) {
+            button.parentElement.remove();
+        }
+
+        function collectFormData() {
+            const questions = [];
+            const answers = [];
+            const correctAnswers = [];
+
+            document.querySelectorAll(".question-item").forEach((questionDiv, qIndex) => {
+                const questionInput = questionDiv.querySelector("input[name='questions[]']");
+                questions.push(questionInput.value);
+
+                const answerInputs = questionDiv.querySelectorAll("input[name='answers[" + qIndex + "][]']");
+                const correctAnswerInput = questionDiv.querySelector("input[name='correct_answers[" + qIndex + "]']:checked");
+
+                answerInputs.forEach((answerInput, aIndex) => {
+                    answers.push(answerInput.value);
+                    if (aIndex === parseInt(correctAnswerInput.value)) {
+                        correctAnswers.push(aIndex);
+                    }
+                });
+            });
+
+            document.getElementById("id_questions").value = JSON.stringify(questions);
+            document.getElementById("id_answers").value = JSON.stringify(answers);
+            document.getElementById("id_correct_answers").value = JSON.stringify(correctAnswers);
+        }
+
+        document.querySelector("form").addEventListener("submit", function (event) {
+            collectFormData();
+        });
+    </script>
+</head>
+<body>
+    <h1>Create Quiz</h1>
+    <form method="POST" action="{% url 'create_quiz' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <h2>Questions & Answers</h2>
+        <div id="questions-container"></div>
+        <button type="button" onclick="addQuestionField()">Add Question</button>
+
+        <br><br>
+        <button type="submit">Save Quiz</button>
+    </form>
+</body>
+</html>
