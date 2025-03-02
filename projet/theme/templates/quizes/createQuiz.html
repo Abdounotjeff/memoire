@@ -4,16 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         function addQuestionField() {
             const container = document.getElementById("questions-container");
             const questionDiv = document.createElement("div");
-            questionDiv.classList.add("question-item");
+            questionDiv.classList.add("bg-gray-100", "p-4", "rounded-lg", "mb-4", "shadow");
+
             questionDiv.innerHTML = `
-                <input type="text" name="questions[]" placeholder="Enter question text" required>
-                <button type="button" onclick="removeQuestionField(this)">Remove</button>
-                <div class="answers-container"></div>
-                <button type="button" onclick="addAnswerField(this)">Add Answer</button>
+                <div class="flex justify-between items-center">
+                    <input type="text" name="questions[]" placeholder="Enter question text"
+                        class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required>
+                    <button type="button" onclick="removeQuestionField(this)"
+                        class="ml-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Remove</button>
+                </div>
+                <div class="answers-container space-y-2 mt-2"></div>
+                <button type="button" onclick="addAnswerField(this)"
+                    class="mt-2 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">Add Answer</button>
             `;
             container.appendChild(questionDiv);
         }
@@ -24,16 +32,20 @@
             const answerIndex = answerContainer.children.length;
 
             const answerDiv = document.createElement("div");
-            answerDiv.classList.add("answer-item");
+            answerDiv.classList.add("flex", "items-center", "space-x-2");
+
             answerDiv.innerHTML = `
-                <input type="text" name="answers[${questionIndex}][]" placeholder="Enter answer" required>
-                <input type="radio" name="correct_answers[${questionIndex}]" value="${answerIndex}" ${answerIndex === 0 ? 'checked' : ''}>
+                <input type="text" name="answers[${questionIndex}][]" placeholder="Enter answer"
+                    class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required>
+                <input type="radio" name="correct_answers[${questionIndex}]" value="${answerIndex}" ${answerIndex === 0 ? 'checked' : ''}
+                    class="w-5 h-5 text-blue-500">
             `;
             answerContainer.appendChild(answerDiv);
         }
 
         function removeQuestionField(button) {
-            button.parentElement.remove();
+            button.parentElement.parentElement.remove();
         }
 
         function collectFormData() {
@@ -45,8 +57,8 @@
                 const questionInput = questionDiv.querySelector("input[name='questions[]']");
                 questions.push(questionInput.value);
 
-                const answerInputs = questionDiv.querySelectorAll("input[name='answers[" + qIndex + "][]']");
-                const correctAnswerInput = questionDiv.querySelector("input[name='correct_answers[" + qIndex + "]']:checked");
+                const answerInputs = questionDiv.querySelectorAll(`input[name='answers[${qIndex}][]']`);
+                const correctAnswerInput = questionDiv.querySelector(`input[name='correct_answers[${qIndex}]']:checked`);
 
                 answerInputs.forEach((answerInput, aIndex) => {
                     answers.push(answerInput.value);
@@ -61,23 +73,38 @@
             document.getElementById("id_correct_answers").value = JSON.stringify(correctAnswers);
         }
 
-        document.querySelector("form").addEventListener("submit", function (event) {
-            collectFormData();
+        function confirmSaveQuiz(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const confirmation = confirm(
+                "⚠️ Once the quiz is created, an automatic email will be sent to all students within the selected groups.\n\n" +
+                "You will be redirected to add questions.\n\n" +
+                "Do you want to proceed?"
+            );
+
+            if (confirmation) {
+                collectFormData();
+                event.target.closest("form").submit(); // Submit the form
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelector("#saveQuizButton").addEventListener("click", confirmSaveQuiz);
         });
     </script>
 </head>
-<body>
-    <h1>Create Quiz</h1>
-    <form method="POST" action="{% url 'create_quiz' %}">
-        {% csrf_token %}
-        {{ form.as_p }}
-
-        <h2>Questions & Answers</h2>
-        <div id="questions-container"></div>
-        <button type="button" onclick="addQuestionField()">Add Question</button>
-
-        <br><br>
-        <button type="submit">Save</button>
-    </form>
+<body class="bg-gray-100 flex justify-center items-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
+        <h1 class="text-2xl font-bold text-gray-700 mb-6">Create Quiz</h1>
+        
+        <form method="POST" action="{% url 'create_quiz' %}" class="space-y-4">
+            {% csrf_token %}
+            <div class="space-y-2">
+                {{ form.as_p }}
+            </div>
+            <button type="submit" id="saveQuizButton"
+                class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">Save Quiz</button>
+        </form>
+    </div>
 </body>
 </html>

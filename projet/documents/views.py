@@ -41,6 +41,8 @@ User = get_user_model()  # Get the CustomUser model
 def index(request):
     return render(request, 'pages/index.html')
 
+
+
 def activate(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -59,6 +61,49 @@ def activate(request, uidb64, token):
     
     return redirect('index')
 
+def send_email_to_student(request, student_email, quiz):
+    try:
+        user = User.objects.get(email=student_email)
+        send_quiz_notification_email(request, user, student_email, quiz)
+    except User.DoesNotExist:
+        messages.error(request, f"User with email {student_email} does not exist.")
+
+def send_quiz_notification_email(request, user, to_email, quiz):
+    mail_subject = f"New Quiz Available: {quiz.name}"
+    message = render_to_string("pages/studentNot.html", {
+        'user': user,
+        'quiz': quiz,
+        'domain': get_current_site(request).domain,
+        'protocol': 'http',  # Change to 'https' if using SSL
+    })
+
+    email = EmailMessage(mail_subject, message, to=[to_email], connection=get_connection())
+    if email.send():
+        messages.success(request, f'Quiz notification sent to {to_email}.')
+    else:
+        messages.error(request, f'Failed to send quiz notification to {to_email}.')
+
+def send_email_to_student_delete(request, student_email, quiz):
+    try:
+        user = User.objects.get(email=student_email)
+        send_quiz_notification_email_delete(request, user, student_email, quiz)
+    except User.DoesNotExist:
+        messages.error(request, f"User with email {student_email} does not exist.")
+
+def send_quiz_notification_email_delete(request, user, to_email, quiz):
+    mail_subject = f"New Quiz Available: {quiz.name}"
+    message = render_to_string("pages/studentNotDel.html", {
+        'user': user,
+        'quiz': quiz,
+        'domain': get_current_site(request).domain,
+        'protocol': 'http',  # Change to 'https' if using SSL
+    })
+
+    email = EmailMessage(mail_subject, message, to=[to_email], connection=get_connection())
+    if email.send():
+        messages.success(request, f'Quiz notification sent to {to_email}.')
+    else:
+        messages.error(request, f'Failed to send quiz notification to {to_email}.')
 
 
 def activateEmail(request, user, to_email):
@@ -191,25 +236,39 @@ def professor_dashboard(request):
 
 @login_required
 def create_quiz(request):
-    # Ensure only users with the 'professor' role can access this view
     if not request.user.is_professor() or not hasattr(request.user, 'professor'):
-        return redirect('index')  # Redirect unauthorized users
+        return redirect('index')
 
-    professor = request.user.professor  # Get the professor instance
+    professor = request.user.professor  
 
     if request.method == "POST":
         form = QuizForm(request.POST, professor=professor)
         if form.is_valid():
-            form.save(professor=professor)  # Assign professor
-            return redirect('professor')  # Redirect to quiz list page
+            quiz = form.save(professor=professor)  # Save and get quiz instance
+            print("saved")
+            # Get all students in the selected groups
+            students_emails = CustomUser.objects.filter(
+            student__group__in=quiz.groups.all(),  # Get students linked to the selected groups
+            role="student",  # Ensure they are students
+            ).values_list("email", flat=True)  # Extract only emails
+
+            # Convert to a list (if needed)
+            students_emails = list(students_emails)
+            print("students_emails: ", students_emails)
+            for student_email in students_emails:
+                send_email_to_student(request, student_email, quiz)
+
+            return redirect('edit_quiz', quiz_id=quiz.id)  # Redirect to edit page
     else:
         form = QuizForm(professor=professor)
 
     return render(request, 'quizes/createQuiz.html', {'form': form})
 
 
+#how can i pass from create quiz to edit the just-created quiz
+
 @login_required
-def edit_quiz(request, quiz_id):
+def edit_quiz(request, quiz_id):    
     quiz = get_object_or_404(Quiz, id=quiz_id)
 
     # Ensure only the professor who created the quiz can edit it
@@ -274,6 +333,17 @@ def delete_quiz(request, quiz_id):
         return redirect('index')
 
     if request.method == "POST":  # Confirm deletion
+        students_emails = CustomUser.objects.filter(
+            student__group__in=quiz.groups.all(),  # Get students linked to the selected groups
+            role="student",  # Ensure they are students
+            ).values_list("email", flat=True)  # Extract only emails
+
+            # Convert to a list (if needed)
+        students_emails = list(students_emails)
+        print("students_emails: ", students_emails)
+            
+        for student_email in students_emails:
+            send_email_to_student_delete(request, student_email, quiz)
         quiz.delete()
         messages.success(request, "Quiz deleted successfully!")
         return redirect('professor')

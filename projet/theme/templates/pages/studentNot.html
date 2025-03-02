@@ -1,0 +1,12 @@
+{% autoescape off %}
+    Hello {{ user.first_name }},
+    A new quiz of module {{ quiz.name }} has been assigned to your group.
+    Topic: {{ quiz.topic }}
+    Difficulty: {{ quiz.difficulty }}
+    Time Allowed: {{ quiz.time }} minutes
+    The quiz will be available from {{ quiz.start_time }} to {{ quiz.end_time }}
+
+    You can access the quiz by logging into your student portal.
+
+    Best regards, Your Instructor
+    {% endautoescape %}
