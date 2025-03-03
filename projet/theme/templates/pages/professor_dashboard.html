@@ -22,7 +22,7 @@
             <div class="modal-body" id="modal-body-confirm"></div>
             <div class="modal-footer">
                 {% if request.user.role == "professor" %}
-                    <a id="editQuizBtn" href="#" class="btn btn-primary">Modifier Quiz</a>
+                    <a id="editQuizBtn" href="#" class="btn btn-primary">Modifier</a>
                 {% endif %}
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
             </div>
@@ -119,6 +119,7 @@
                         <td class="p-3">Projet</td>
                         <td class="p-3">
                             <a href="#" class="project-link text-green-500 underline"
+                                data-pk="{{ project.pk }}"
                                 data-title="{{ project.title }}"
                                 data-description="{{ project.description }}"
                                 data-bs-toggle="modal"
@@ -140,6 +141,10 @@
 </div>
 {% if request.user.role == "professor" %}
     <a href="{% url 'create_quiz' %}" class="btn btn-primary">Create Quiz</a>
+{% endif %}
+<br>
+{% if request.user.role == "professor" %}
+    <a href="{% url 'create_project' %}" class="btn btn-primary">Create Project</a>
 {% endif %}
 
 {% endblock %}

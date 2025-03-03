@@ -6,6 +6,7 @@ from quizes.models import Quiz
 from questions.models import Question, Answer
 from documents.models import Professor
 from groupe.models import Group
+from projetTask.models import ProjectSubmissionTask
 
 class CreateUserForm(UserCreationForm):
     class Meta:
@@ -111,3 +112,32 @@ class QuizForm(forms.ModelForm):
                                     created=quiz.created_at  # Use quiz creation time
                                 )
         return quiz
+    
+class projectForm(forms.ModelForm):
+    class Meta:
+        model = ProjectSubmissionTask
+        fields = ['title', 'description', 'groups', 'start_time', 'end_time']
+        widgets = {
+            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'difficulty': forms.Select(choices=DIFF_CHOICES),
+            'groups': forms.CheckboxSelectMultiple(),  # Allow multiple group selection
+        }
+
+    def __init__(self, *args, **kwargs):
+        professor = kwargs.pop('professor', None)  # Get the logged-in professor
+        super().__init__(*args, **kwargs)
+        
+        if professor:
+            # Limit groups to only those assigned to the professor
+            self.fields['groups'].queryset = professor.groups.all()
+
+    def save(self, commit=True, professor=None):
+        projet = super().save(commit=False)
+        if professor:
+            projet.created_by = professor  # Assign the logged-in professor
+        if commit:
+            projet.save()
+            self.save_m2m()  # Save ManyToMany relationships
+        return projet
+        

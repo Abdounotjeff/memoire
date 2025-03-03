@@ -28,7 +28,7 @@ from questions.models import Question, Answer
 from .models import Professor
 from groupe.models import Group
 from django.utils.timezone import now
-from .forms import QuizForm
+from .forms import QuizForm, projectForm
 from django.shortcuts import get_object_or_404
 from datetime import datetime
 
@@ -68,6 +68,28 @@ def send_email_to_student(request, student_email, quiz):
     except User.DoesNotExist:
         messages.error(request, f"User with email {student_email} does not exist.")
 
+def send_email_to_student_project(request, student_email, projet):
+    try:
+        user = User.objects.get(email=student_email)
+        send_project_notification_email(request, user, student_email, projet)
+    except User.DoesNotExist:
+        messages.error(request, f"User with email {student_email} does not exist.")
+
+def send_project_notification_email(request, user, to_email, projet):
+    mail_subject = f"New project Available: {projet.title}"
+    message = render_to_string("pages/studentNotPro.html", {
+        'user': user,
+        'projet': projet,
+        'domain': get_current_site(request).domain,
+        'protocol': 'http',  # Change to 'https' if using SSL
+    })
+
+    email = EmailMessage(mail_subject, message, to=[to_email], connection=get_connection())
+    if email.send():
+        messages.success(request, f'Project Task notification sent to {user.first_name} {user.last_name}.')
+    else:
+        messages.error(request, f'Failed to send Project Task notification to {user.first_name} {user.last_name}.')
+
 def send_quiz_notification_email(request, user, to_email, quiz):
     mail_subject = f"New Quiz Available: {quiz.name}"
     message = render_to_string("pages/studentNot.html", {
@@ -79,9 +101,9 @@ def send_quiz_notification_email(request, user, to_email, quiz):
 
     email = EmailMessage(mail_subject, message, to=[to_email], connection=get_connection())
     if email.send():
-        messages.success(request, f'Quiz notification sent to {to_email}.')
+        messages.success(request, f'Project Task notification sent to {user.first_name} {user.last_name}.')
     else:
-        messages.error(request, f'Failed to send quiz notification to {to_email}.')
+        messages.error(request, f'Failed to send Project Task notification to {user.first_name} {user.last_name}.')
 
 def send_email_to_student_delete(request, student_email, quiz):
     try:
@@ -90,8 +112,31 @@ def send_email_to_student_delete(request, student_email, quiz):
     except User.DoesNotExist:
         messages.error(request, f"User with email {student_email} does not exist.")
 
+def send_email_to_student_delete_project(request, student_email, projet):
+    try:
+        user = User.objects.get(email=student_email)
+        send_quiz_notification_email_delete_project(request, user, student_email, projet)
+    except User.DoesNotExist:
+        messages.error(request, f"User with email {student_email} does not exist.")
+
+def send_quiz_notification_email_delete_project(request, user, to_email, projet):
+    mail_subject = f"Project Task removed: {projet.title}"
+    message = render_to_string("pages/studentNotDelPro.html", {
+        'user': user,
+        'projet': projet,
+        'domain': get_current_site(request).domain,
+        'protocol': 'http',  # Change to 'https' if using SSL
+    })
+
+    email = EmailMessage(mail_subject, message, to=[to_email], connection=get_connection())
+    if email.send():
+        messages.success(request, f'Project Task notification sent to {user.first_name} {user.last_name}.')
+    else:
+        messages.error(request, f'Failed to send Project Task notification to {user.first_name} {user.last_name}.')
+
+
 def send_quiz_notification_email_delete(request, user, to_email, quiz):
-    mail_subject = f"New Quiz Available: {quiz.name}"
+    mail_subject = f"Quiz Task removed: {quiz.name}"
     message = render_to_string("pages/studentNotDel.html", {
         'user': user,
         'quiz': quiz,
@@ -349,3 +394,81 @@ def delete_quiz(request, quiz_id):
         return redirect('professor')
 
     return render(request, 'quizes/edit_quiz.html', {'quiz': quiz})
+
+
+@login_required
+def create_project(request):
+
+    if not request.user.is_professor():
+        messages.error(request, "You are not authorized!.")
+        return redirect('index')  
+    professor = request.user.professor
+    if request.method == 'POST':
+        form = projectForm(request.POST, professor=professor)
+        if form.is_valid():
+            project = form.save(professor = professor)
+
+            students_emails = list(CustomUser.objects.filter(
+                student__group__in=project.groups.all(),
+                role="student"
+            ).values_list("email", flat=True))
+
+            print("students_emails: ", students_emails)
+            
+            for student_email in students_emails:
+                send_email_to_student_project(request, student_email, project)
+
+            messages.success(request, "Project created successfully!")
+            return redirect('index')  # Move redirect outside the loop
+
+    else:
+        form = projectForm(professor = professor)
+
+    return render(request, 'projet/create_project.html', {'form': form})
+
+
+@login_required
+def edit_project(request, project_id):
+    project = get_object_or_404(ProjectSubmissionTask, id=project_id)
+
+    # Ensure only the professor who created the quiz can edit it
+    if not request.user.is_professor():
+        messages.error(request, "You are not authorized to edit this quiz.")
+        print("hh")
+        return redirect('index')  # Redirect unauthorized users
+    
+    if request.method == "POST":
+        form = projectForm(request.POST, instance=project, professor=request.user.professor)
+        if form.is_valid():
+            form.save()
+            return redirect('index')
+    else:
+        form = projectForm(instance=project, professor=request.user.professor)
+    return render(request, 'projet/edit_project.html', {'form': form, 'project': project})
+
+@login_required
+def delete_project(request, project_id):
+    project = get_object_or_404(ProjectSubmissionTask, id=project_id)
+
+    # Ensure only the professor who created the quiz can delete it
+    if not request.user.is_professor():
+        messages.error(request, "You are not authorized to delete this project.")
+        return redirect('index')
+
+    if request.method == "POST":  # Confirm deletion
+        students_emails = CustomUser.objects.filter(
+            student__group__in=project.groups.all(),  # Get students linked to the selected groups
+            role="student",  # Ensure they are students
+            ).values_list("email", flat=True)  # Extract only emails
+
+            # Convert to a list (if needed)
+        students_emails = list(students_emails)
+        print("students_emails: ", students_emails)
+            
+        for student_email in students_emails:
+            send_email_to_student_delete_project(request, student_email, project)
+        project.delete()
+        messages.success(request, "Project deleted successfully!")
+        return redirect('professor')
+
+    return render(request, 'projet/edit_project.html', {'project': project})

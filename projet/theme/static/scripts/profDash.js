@@ -30,10 +30,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             console.log("Quiz Data:", { id, name, numbQuestions, difficulty, scoreToPass, time });
             // ✅ Update the "Modifier Quiz" button inside the modal
-            let editBtn = document.getElementById("editQuizBtn");
-            if (editBtn) {
-                editBtn.href = `/edit-quiz/${id}/`; // Update link dynamically
-            }
+            
+            
             const content = `
                 <div class="h5 mb-3">Détails du Quiz: <strong>${name}</strong></div>
                 <ul>
@@ -44,7 +42,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     <li><strong>Durée :</strong> ${time} minutes</li>
                 </ul>
             `;
-
+            let editBtn = document.getElementById("editQuizBtn");
+            if (editBtn) {
+                editBtn.href = `/edit-quiz/${id}/`; // Update link dynamically
+            }
+        
+        
             openModal("Détails du Quiz", content);
         });
     });
@@ -55,12 +58,18 @@ document.addEventListener("DOMContentLoaded", function () {
             event.preventDefault(); // Prevent default link behavior
 
             console.log("Project clicked:", project);
+            const projectId = project.getAttribute("data-pk");
             const projectTitle = project.getAttribute("data-title");
             const projectDescription = project.getAttribute("data-description");
 
             console.log("Project Data:", { projectTitle, projectDescription });
 
+            let editBtn = document.getElementById("editQuizBtn");
+            if (editBtn) {
+                editBtn.href = `/edit-project/${projectId}/`; // Update link dynamically
+            }
             const content = `
+                <p><strong>ID du Projet:</strong> ${projectId}</p>
                 <p><strong>Nom du Projet:</strong> ${projectTitle}</p>
                 <p><strong>Description:</strong> ${projectDescription}</p>
             `;

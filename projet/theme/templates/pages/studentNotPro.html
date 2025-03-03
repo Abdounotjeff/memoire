@@ -1,0 +1,12 @@
+{% autoescape off %}
+    Hello {{ user.first_name }},
+    A new Project Task of Title {{ projet.title }} has been assigned to your group.
+    Description: 
+    {{ projet.description }}
+    
+    The Task will be available from {{ projet.start_time }} to {{ projet.end_time }}
+
+    You can access the Project by logging into your student portal.
+
+    Best regards, Your Instructor
+{% endautoescape %}
