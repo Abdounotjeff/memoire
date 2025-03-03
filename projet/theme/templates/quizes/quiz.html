@@ -1,26 +1,28 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
-{% block title %}
-    {{obj.name}}
-{% endblock title %}
-
+{% block title %}{{ obj.name }}{% endblock title %}
 {% block scripts %}
     <script src="{% static 'scripts/QuizDetail.js' %}"></script>
 {% endblock scripts %}
 
 {% block content %}
-<div class="justify-between">
-    <div>
-        <h1>{{ obj.name }}</h1>
-        <p>Score to pass: {{ obj.required_score }}%</p>
+<div class="flex flex-col items-center p-6 space-y-6 bg-gray-100 min-h-screen">
+    <div class="text-center">
+        <h1 class="text-3xl font-bold text-gray-800">{{ obj.name }}</h1>
+        <p class="text-lg text-gray-600">Score to pass: <span class="font-semibold">{{ obj.required_score }}%</span></p>
     </div>
-    <div id="timer-box"></div>
-    <form id="quiz-form" method="POST">  {# Changed from GET to POST #}
+    
+    <div id="timer-box" class="text-2xl font-semibold text-white bg-blue-600 px-4 py-2 rounded-lg"></div>
+
+    <form id="quiz-form" method="POST" class="w-full max-w-2xl bg-white shadow-lg p-6 rounded-lg">
         {% csrf_token %}
-        <div id="quiz-box"></div>
-        <button type="submit" class="btn btn-primary mt-3">Submit</button>
+        <div id="quiz-box" class="space-y-4"></div>
+        <!--<button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg mt-4">
+            Submit
+        </button>-->
     </form>
-    <div id="score-box"></div>
-    <div id="result-box"></div>
+
+    <div id="score-box" class="text-xl font-semibold text-gray-800"></div>
+    <div id="result-box" class="w-full max-w-2xl"></div>
 </div>
 {% endblock content %}

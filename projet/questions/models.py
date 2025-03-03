@@ -11,7 +11,7 @@ class Question(models.Model):
         return str(self.text)
     
     def get_answers(self):#get all the answers to a particular answer
-        return self.answer_set.all() # we can also type the attribute relation name but 
+        return self.answers.all() # we can also type the attribute relation name but 
                                      # we need add a related name to question attribute
     
 class Answer(models.Model):

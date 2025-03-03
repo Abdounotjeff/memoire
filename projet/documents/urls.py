@@ -17,5 +17,6 @@ urlpatterns = [
     path('create-project/', views.create_project, name='create_project'),
     path('edit-project/<int:project_id>/', views.edit_project, name='edit_project'),
     path('delete-project/<int:project_id>/', views.delete_project, name='delete_project'),
+    path('student/', views.student_dashboard, name='student'),
     
 ]

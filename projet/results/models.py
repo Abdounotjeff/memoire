@@ -11,5 +11,5 @@ class Result(models.Model):
     submitted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.student.user.username} - {self.quiz.name}: {self.score}"
+        return f"{self.student} - {self.quiz.name}: {self.score}"
 

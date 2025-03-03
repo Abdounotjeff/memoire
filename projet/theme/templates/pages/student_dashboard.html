@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto p-5 min-h-screen  ">
+    <h1 class="text-2xl font-bold">Welcome, {{ student.user.username }}</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <!-- Projects Section -->
+        <div>
+            <h2 class="text-xl font-semibold">Available Projects</h2>
+            {% if available_projects %}
+                <div class="space-y-3">
+                    {% for project in available_projects %}
+                        <div class="p-4 border rounded shadow bg-white">
+                            <h3 class="text-lg font-bold">{{ project.title }}</h3>
+                            <p class="text-gray-600">{{ project.description }}</p>
+                            <p><strong>Deadline:</strong> {{ project.end_time }}</p>
+                            <a href="#" class="text-blue-500">Submit Now</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500">No projects available.</p>
+            {% endif %}
+        </div>
+
+        <!-- Quizzes Section -->
+        <div>
+            <h2 class="text-xl font-semibold">Available Quizzes</h2>
+            {% if available_quizzes %}
+                <div class="space-y-3">
+                    {% for quiz in available_quizzes %}
+                        <div class="p-4 border rounded shadow bg-white">
+                            <h3 class="text-lg font-bold">{{ quiz.name }}</h3>
+                            <p><strong>Topic:</strong> {{ quiz.topic }}</p>
+                            <p><strong>Difficulty:</strong> {{ quiz.difficulty|title }}</p>
+                            <p><strong>Duration:</strong> {{ quiz.time }} minutes</p>
+                            <a href="{% url 'quizes:quiz-view' quiz.id %}" class="text-green-500">Take Quiz</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500">No quizzes available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

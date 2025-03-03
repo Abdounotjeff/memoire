@@ -37,9 +37,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     alert("Time's up!");
                     sendData();
                 }, 500);
-            } else {
+            }else {
                 timerBox.innerHTML = `<b>${displayMinutes}:${displaySeconds}</b>`;
             }
+            
         }, 1000);
     };
 

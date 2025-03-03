@@ -23,7 +23,6 @@ from django.core.mail import get_connection
 from django.db.models import Avg, Count, Sum
 from django.http import JsonResponse
 import json
-from quizes.models import Quiz
 from questions.models import Question, Answer
 from .models import Professor
 from groupe.models import Group
@@ -472,3 +471,43 @@ def delete_project(request, project_id):
         return redirect('professor')
 
     return render(request, 'projet/edit_project.html', {'project': project})
+
+
+@login_required
+def student_dashboard(request):
+    # Ensure the user is a student
+    if request.user.is_professor():
+        messages.error(request, "You are not authorized!.")
+        return redirect('index')
+
+    student = Student.objects.get(user=request.user)
+    current_time = now()
+
+    # Fetch available project submission tasks assigned to the student's group
+    available_projects = ProjectSubmissionTask.objects.filter(
+        groups=student.group,
+        start_time__lte=current_time,
+        end_time__gte=current_time
+    ).distinct()
+
+    # Fetch available quizzes assigned to the student's group
+    available_quizzes = Quiz.objects.filter(
+        groups=student.group,
+        start_time__lte=current_time,
+        end_time__gte=current_time
+    ).distinct()
+
+    # Filter out quizzes where the student has already submitted results
+    completed_quizzes = Result.objects.filter(student=student).values_list('quiz_id', flat=True)
+    available_quizzes = available_quizzes.exclude(id__in=completed_quizzes)
+
+    # Remove expired projects and quizzes
+    available_projects = available_projects.exclude(end_time__lt=current_time)
+    available_quizzes = available_quizzes.exclude(end_time__lt=current_time)
+
+    context = {
+        'student': student,
+        'available_projects': available_projects,
+        'available_quizzes': available_quizzes,
+    }
+    return render(request, 'pages/student_dashboard.html', context)
