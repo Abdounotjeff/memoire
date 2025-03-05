@@ -77,5 +77,40 @@ document.addEventListener("DOMContentLoaded", function () {
             openModal("Détails du Projet", content);
         });
     });
+
+    //button of grades
+    document.querySelectorAll(".save-btn").forEach(button => {
+        button.addEventListener("click", function () {
+            let studentId = this.getAttribute("data-student-id");
+            let grades = [];
+
+            document.querySelectorAll(`.grade-input[data-student-id="${studentId}"]`).forEach(input => {
+                grades.push({
+                    project_id: input.getAttribute("data-project-id"),
+                    score: input.value
+                });
+            });
+
+            fetch("/update_project_scores/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({
+                    student_id: studentId,
+                    grades: grades
+                })
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      alert("Notes mises à jour avec succès !");
+                  } else {
+                      alert("Erreur lors de la mise à jour des notes.");
+                  }
+              });
+        });
+    });
 });
+
 

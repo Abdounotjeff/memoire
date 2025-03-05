@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.forms import inlineformset_factory
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
+from reportlab.pdfgen import canvas
 from .models import *
 from quizes.models import Quiz
 from results.models import Result
@@ -30,6 +31,7 @@ from django.utils.timezone import now
 from .forms import QuizForm, projectForm
 from django.shortcuts import get_object_or_404
 from datetime import datetime
+from .forms import AcademicSessionForm, GroupForm, UserActivationForm
 
 
 
@@ -255,17 +257,27 @@ def professor_dashboard(request):
                     quiz_scores[quiz.id] = result.score
 
             projects = ProjectSubmissionTask.objects.filter(groups=group)
-            project_scores = {project.id: 0 for project in projects}
+            project_scores = {}
+
             for project in projects:
                 submission = ProjectSubmission.objects.filter(student=student, task=project).first()
+    
                 if submission:
-                    project_scores[project.id] = 100  
-
+                # Fetch the professor-assigned score, defaulting to 0 if not set
+                    score = submission.grade if submission.grade is not None else 0
+                    project_scores[project.id] = {
+                    "score": score,
+                    "file": submission.file.url if submission.file else None  # Include project file URL
+                    }
+                else:
+                    project_scores[project.id] = {"score": 0, "file": None}  # No submission, default 0%       
+                
             student_data.append({
-                "student": student,
-                "quiz_scores": quiz_scores,
-                "project_scores": project_scores,
+            "student": student,
+            "quiz_scores": quiz_scores,
+            "project_scores": project_scores,
             })
+
 
         group_data.append({"group": group, "students": student_data})
 
@@ -276,6 +288,50 @@ def professor_dashboard(request):
     }
 
     return render(request, "pages/professor_dashboard.html", context)
+
+@login_required
+def update_project_scores(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        student_id = data.get("student_id")
+        grades = data.get("grades", [])
+
+        for grade in grades:
+            project_id = grade["project_id"]
+            score = int(grade["score"])
+
+            submission = ProjectSubmission.objects.filter(student_id=student_id, task_id=project_id).first()
+            if submission:
+                submission.grade = score
+                submission.save()
+
+        return JsonResponse({"success": True})
+
+    return JsonResponse({"success": False}, status=400)
+
+# def generate_student_pdf(request):
+#     # Create the HttpResponse object with PDF content type
+#     response = HttpResponse(content_type='application/pdf')
+#     response['Content-Disposition'] = 'attachment; filename="students_report.pdf"'
+
+#     # Create PDF document
+#     pdf = canvas.Canvas(response)
+#     pdf.setFont("Helvetica", 14)
+#     pdf.drawString(100, 800, "Students Dashboard Report")  # Title
+
+#     # Fetch students from the database (modify as needed)
+#     students = Student.objects.all()  # Adjust based on your model
+#     y_position = 770  # Start position for student data
+
+#     for student in students:
+#         pdf.setFont("Helvetica", 12)
+#         pdf.drawString(100, y_position, f"ID: {student.id}")
+#         y_position -= 20  # Move down for the next student
+
+#     pdf.showPage()
+#     pdf.save()
+
+#     return response
 
 
 @login_required
@@ -511,3 +567,79 @@ def student_dashboard(request):
         'available_quizzes': available_quizzes,
     }
     return render(request, 'pages/student_dashboard.html', context)
+
+
+@login_required
+def project_submission_view(request, task_id):
+    student = get_object_or_404(Student, user=request.user)
+    project_task = get_object_or_404(ProjectSubmissionTask, id=task_id)
+
+    # Security checks
+    if project_task.end_time < now():
+        messages.error(request, "This project submission has expired.")
+        return redirect("student")
+
+    # if project_task.groups != student.group:
+    #     messages.error(request, "You do not have permission to access this project.")
+    #     return redirect("student")
+
+    if request.method == "POST":
+        file = request.FILES.get("file")
+        
+
+        # Prevent multiple submissions
+        if ProjectSubmission.objects.filter(student=student, task=project_task).exists():
+            project = ProjectSubmission.objects.get(student=student, task = project_task)
+            project.delete()
+            ProjectSubmission.objects.create(student=student, task=project_task, file=file)
+            messages.success(request, "Project submitted successfully!")
+            return redirect("student")
+
+        else: 
+            ProjectSubmission.objects.create(student=student, task=project_task, file=file)
+            messages.success(request, "Project submitted successfully!")
+            return redirect("student")
+
+    return render(request, "projet/project_submission.html", {"project": project_task})
+
+
+
+# ✅ Step 1: Create Academic Session
+def add_academic_session(request):
+    if request.method == "POST":
+        form = AcademicSessionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('add_group')  # Redirect to Group Creation Page
+    else:
+        form = AcademicSessionForm()
+    
+    return render(request, "admin/add_academic_session.html", {"form": form})
+
+# ✅ Step 2: Create Groups
+def add_group(request):
+    if request.method == "POST":
+        form = GroupForm(request.POST)
+        if form.is_valid():
+            form.save()
+            if "add_another" in request.POST:
+                return redirect('add_group')  # Stay on the same page to add more groups
+            return redirect('activate_users')  # Redirect to User Activation Page
+    else:
+        form = GroupForm()
+    
+    return render(request, "admin/add_group.html", {"form": form})
+
+# ✅ Step 3: Activate Users
+def activate_users(request):
+    users = User.objects.all()
+    
+    if request.method == "POST":
+        for user in users:
+            form = UserActivationForm(request.POST, instance=user)
+            if form.is_valid():
+                form.save()
+        
+        return redirect('index')  # Redirect to some admin home page
+
+    return render(request, "admin/activate_users.html", {"users": users})

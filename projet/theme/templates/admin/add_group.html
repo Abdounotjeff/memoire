@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Add Groups</h2>
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" name="add_another">Add Another Group</button>
+    <button type="submit">Proceed to Activate Users</button>
+</form>
+{% endblock %}

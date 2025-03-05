@@ -11,6 +11,7 @@ class CustomUser(AbstractUser):
         ('professor', 'professor'),
         ('admin', 'admin'),
     )
+    id = models.AutoField(primary_key=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='professor')
     is_active = models.BooleanField(default=False)
 

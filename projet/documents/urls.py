@@ -18,5 +18,10 @@ urlpatterns = [
     path('edit-project/<int:project_id>/', views.edit_project, name='edit_project'),
     path('delete-project/<int:project_id>/', views.delete_project, name='delete_project'),
     path('student/', views.student_dashboard, name='student'),
-    
+    path("project/submit/<int:task_id>/", views.project_submission_view, name="project_submission"),
+    path("update_project_scores/", views.update_project_scores, name="update_project_scores"),
+    # path('download_student_pdf/', views.generate_student_pdf, name='download_student_pdf'),
+    path("add_academic_session/", views.add_academic_session, name="add_academic_session"),
+    path("add_group/", views.add_group, name="add_group"),
+    path("activate_users/", views.activate_users, name="activate_users"),
 ]

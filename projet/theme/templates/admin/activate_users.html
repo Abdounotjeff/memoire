@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Activate Users</h2>
+<form method="POST">
+    {% csrf_token %}
+    {% for user in users %}
+        <p>{{ user.username }}
+            <input type="checkbox" name="is_active_{{ user.id }}" {% if user.is_active %}checked{% endif %}>
+        </p>
+    {% endfor %}
+    <button type="submit">Update Users</button>
+</form>
+{% endblock %}

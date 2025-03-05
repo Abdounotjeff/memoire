@@ -7,6 +7,42 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <!-- Custom JavaScript -->
 <script src="{% static 'scripts/profDash.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".save-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                let studentId = this.getAttribute("data-student-id");
+                let grades = [];
+    
+                document.querySelectorAll(`.grade-input[data-student-id="${studentId}"]`).forEach(input => {
+                    grades.push({
+                        project_id: input.getAttribute("data-project-id"),
+                        score: input.value
+                    });
+                });
+    
+                fetch("/update_project_scores/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify({
+                        student_id: studentId,
+                        grades: grades
+                    })
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          alert("Notes mises à jour avec succès !");
+                      } else {
+                          alert("Erreur lors de la mise à jour des notes.");
+                      }
+                  });
+            });
+        });
+    });
+    </script>
 {% endblock scripts %}
 
 {% block content %}
@@ -31,6 +67,7 @@
 </div>
 
 <!-- Dashboard Content -->
+<!-- Dashboard Content -->
 <div class="container mx-auto p-6">
     <h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard de {{ request.user.first_name }} {{ request.user.last_name }}</h1>
 
@@ -45,6 +82,7 @@
                         <th class="p-3 text-left">Étudiant</th>
                         <th class="p-3 text-left">Résultats des Quiz</th>
                         <th class="p-3 text-left">Résultats des Projets</th>
+                        <th class="p-3 text-left">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,12 +100,29 @@
                         </td>
                         <td class="p-3">
                             {% if student.project_scores %}
-                                {% for project_id, score in student.project_scores.items %}
-                                    <span class="block">Projet {{ project_id }}: {{ score }}/100</span>
+                                {% for project_id, project in student.project_scores.items %}
+                                    <div class="mb-2">
+                                        <span>Projet {{ project_id }}:</span>
+                                        <input type="number" class="grade-input w-20 p-1 border rounded-md" 
+                                               data-student-id="{{ student.student.id }}" 
+                                               data-project-id="{{ project_id }}"
+                                               value="{{ project.score }}" min="0" max="100">
+                                        /100
+                                        {% if project.file %}
+                                            <a href="{{ project.file }}" target="_blank" 
+                                               class="text-blue-500 underline ml-2">Télécharger</a>
+                                        {% endif %}
+                                    </div>
                                 {% endfor %}
                             {% else %}
                                 <span class="text-gray-500">Aucun projet évalué</span>
                             {% endif %}
+                        </td>
+                        <td class="p-3">
+                            <button class="save-btn bg-blue-500 text-white px-3 py-1 rounded-md" 
+                                    data-student-id="{{ student.student.id }}">
+                                Enregistrer
+                            </button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -76,6 +131,12 @@
         </div>
     </div>
     {% endfor %}
+</div>
+
+<!-- JavaScript -->
+
+
+
 
     <!-- Professor's Quizzes and Projects -->
     <div class="mt-12">
@@ -146,5 +207,8 @@
 {% if request.user.role == "professor" %}
     <a href="{% url 'create_project' %}" class="btn btn-primary">Create Project</a>
 {% endif %}
+
+{% comment %} <a href="{% url 'download_student_pdf' %}" class="btn btn-primary">Download PDF</a> {% endcomment %}
+
 
 {% endblock %}

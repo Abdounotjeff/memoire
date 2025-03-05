@@ -102,6 +102,8 @@ DATABASES = {
 }
 #authentification user
 AUTH_USER_MODEL = 'documents.CustomUser'
+AUTH_PASSWORD_VALIDATORS = []
+
 
 #email verification
 
@@ -159,6 +161,9 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'theme/static'),
     os.path.join(BASE_DIR, 'quizes/static'),
 ]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

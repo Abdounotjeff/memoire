@@ -7,6 +7,8 @@ from questions.models import Question, Answer
 from documents.models import Professor
 from groupe.models import Group
 from projetTask.models import ProjectSubmissionTask
+from SessionAcademique.models import AcademicSession
+from django.contrib.auth.models import User
 
 class CreateUserForm(UserCreationForm):
     class Meta:
@@ -141,3 +143,19 @@ class projectForm(forms.ModelForm):
             self.save_m2m()  # Save ManyToMany relationships
         return projet
         
+class AcademicSessionForm(forms.ModelForm):
+    class Meta:
+        model = AcademicSession
+        fields = ['year', 'start_date', 'end_date']
+
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ['name', 'academic_level', 'academic_session']
+
+class UserActivationForm(forms.ModelForm):
+    is_active = forms.BooleanField(required=False)  # Checkbox for activation
+
+    class Meta:
+        model = CustomUser
+        fields = ['is_active']
