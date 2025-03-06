@@ -10,16 +10,18 @@ from projetTask.models import ProjectSubmissionTask
 from SessionAcademique.models import AcademicSession
 from django.contrib.auth.models import User
 
+
 class CreateUserForm(UserCreationForm):
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password1', 'password2']
+        fields = ['username', 'email', 'first_name', 'last_name', 'password1', 'password2', 'role']
 
     def __init__(self, *args, **kwargs):
         super(CreateUserForm, self).__init__(*args, **kwargs)
 
         common_classes = 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm'
 
+        # Update widget attributes for username and email
         self.fields['username'].widget.attrs.update({
             'class': common_classes,
             'placeholder': "Entrez votre nom d'utilisateur"
@@ -28,7 +30,20 @@ class CreateUserForm(UserCreationForm):
             'class': common_classes,
             'placeholder': "Entrez votre adresse e-mail"
         })
-        
+
+        # Add first_name and last_name fields
+        self.fields['first_name'].widget.attrs.update({
+            'class': common_classes,
+            'placeholder': "Entrez votre prénom"
+        })
+        self.fields['last_name'].widget.attrs.update({
+            'class': common_classes,
+            'placeholder': "Entrez votre nom de famille"
+        })
+        self.fields['role'].widget.attrs.update({
+            'class': common_classes,
+        })
+
         # Manually override password fields
         self.fields['password1'].widget = forms.PasswordInput(attrs={
             'class': common_classes,
@@ -73,6 +88,36 @@ class QuizForm(forms.ModelForm):
         if professor:
             # Limit groups to only those assigned to the professor
             self.fields['groups'].queryset = professor.groups.all()
+
+        common_classes = 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm'
+
+        # Update widget attributes for username and email
+        self.fields['name'].widget.attrs.update({
+            'class': common_classes,
+            'placeholder': "ex: Micro Interogration Compilation"
+        })
+        self.fields['topic'].widget.attrs.update({
+            'class': common_classes,
+            'placeholder': "ex: les types des Grammaires"
+        })
+
+        # Add first_name and last_name fields
+        self.fields['number_of_questions'].widget.attrs.update({
+            'class': common_classes,
+            'placeholder': "Number of questions shown to students"
+        })
+        self.fields['time'].widget.attrs.update({
+            'class': common_classes,
+            'placeholder': "time in Minutes"
+        })
+        
+        self.fields['required_score'].widget.attrs.update({
+            'class': common_classes,
+            'placeholder': "ex: 50"
+        })
+
+        
+
 
     def save(self, commit=True, professor=None):
         quiz = super().save(commit=False)
@@ -133,6 +178,19 @@ class projectForm(forms.ModelForm):
         if professor:
             # Limit groups to only those assigned to the professor
             self.fields['groups'].queryset = professor.groups.all()
+        
+        common_classes = 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm'
+        border_class = 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm'
+
+        self.fields['title'].widget.attrs.update({
+            'class': common_classes,
+            'placeholder': "ex: ADS Project 1"
+        })
+        self.fields['description'].widget.attrs.update({
+            'placeholder': "ex: Description here...",
+            'class': border_class
+        })
+        
 
     def save(self, commit=True, professor=None):
         projet = super().save(commit=False)
@@ -143,19 +201,19 @@ class projectForm(forms.ModelForm):
             self.save_m2m()  # Save ManyToMany relationships
         return projet
         
-class AcademicSessionForm(forms.ModelForm):
-    class Meta:
-        model = AcademicSession
-        fields = ['year', 'start_date', 'end_date']
+# class AcademicSessionForm(forms.ModelForm):
+#     class Meta:
+#         model = AcademicSession
+#         fields = ['year', 'start_date', 'end_date']
 
-class GroupForm(forms.ModelForm):
-    class Meta:
-        model = Group
-        fields = ['name', 'academic_level', 'academic_session']
+# class GroupForm(forms.ModelForm):
+#     class Meta:
+#         model = Group
+#         fields = ['name', 'academic_level', 'academic_session']
 
-class UserActivationForm(forms.ModelForm):
-    is_active = forms.BooleanField(required=False)  # Checkbox for activation
+# class UserActivationForm(forms.ModelForm):
+#     is_active = forms.BooleanField(required=False)  # Checkbox for activation
 
-    class Meta:
-        model = CustomUser
-        fields = ['is_active']
+#     class Meta:
+#         model = CustomUser
+#         fields = ['is_active']

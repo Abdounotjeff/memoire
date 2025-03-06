@@ -4,6 +4,16 @@
 {% block content %}
 <div class="container mx-auto p-5 min-h-screen  ">
     <h1 class="text-2xl font-bold">Welcome, {{ student.user.username }}</h1>
+    {% if messages %}
+    <div class="fixed top-5 right-1/2 space-y-2 z-50">
+        {% for message in messages %}
+            <div class="px-4 py-3 rounded-lg shadow-md text-white 
+                {% if message.tags == 'error' %} bg-red-500 {% elif message.tags == 'success' %} bg-green-500 {% elif message.tags == 'warning' %} bg-yellow-500 {% elif message.tags == 'info' %} bg-blue-500 {% else %} bg-gray-500 {% endif %} ">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         <!-- Projects Section -->

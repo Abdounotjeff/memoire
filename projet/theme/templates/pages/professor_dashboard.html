@@ -45,6 +45,7 @@
     </script>
 {% endblock scripts %}
 
+
 {% block content %}
 
 <!-- Modal 1 to see details of quiz & projects -->
@@ -67,9 +68,18 @@
 </div>
 
 <!-- Dashboard Content -->
-<!-- Dashboard Content -->
 <div class="container mx-auto p-6">
     <h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard de {{ request.user.first_name }} {{ request.user.last_name }}</h1>
+    {% if messages %}
+    <div class="fixed top-5 right-1/2 space-y-2 z-50">
+        {% for message in messages %}
+            <div class="px-4 py-3 rounded-lg shadow-md text-white 
+                {% if message.tags == 'error' %} bg-red-500 {% elif message.tags == 'success' %} bg-green-500 {% elif message.tags == 'warning' %} bg-yellow-500 {% elif message.tags == 'info' %} bg-blue-500 {% else %} bg-gray-500 {% endif %} ">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
     <!-- Group Data -->
     {% for group in group_data %}
@@ -131,84 +141,76 @@
         </div>
     </div>
     {% endfor %}
-</div>
-
-<!-- JavaScript -->
-
-
-
-
     <!-- Professor's Quizzes and Projects -->
-    <div class="mt-12">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Vos Quiz et Projets</h2>
-        <div class="overflow-x-auto">
-            <table class="w-full table-auto border border-gray-300 rounded-lg shadow-md">
-                <thead class="bg-gray-200">
-                    <tr>
-                        <th class="p-3 text-left">Type</th>
-                        <th class="p-3 text-left">Nom</th>
-                        <th class="p-3 text-left">Groupes Assignés</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for quiz in professor_quizzes %} <!--get max id of professor quizzes ID-->
-                    <tr class="border-b border-gray-300">
-                        <td class="p-3">Quiz</td>
-                        <td class="p-3">
-                            <a href="#" class="btn btn-link modal-button"
-                                data-pk="{{ quiz.pk }}"
-                                data-quiz="{{ quiz.name }}"
-                                data-questions="{{ quiz.number_of_questions }}"
-                                data-time="{{ quiz.time }}"
-                                data-difficulty="{{ quiz.difficulty }}"
-                                data-pass="{{ quiz.required_score }}"
-                                data-bs-toggle="modal"
-                                data-bs-target="#detailsModal">
-                                {{ quiz.name }}
-                            </a>
-                        </td>
-                        <td class="p-3">
-                            {% for group in quiz.groups.all %}
-                                <span class="block">{{ group.name }}</span>
-                            {% endfor %}
-                        </td>
-                    </tr>
-                    {% endfor %}
+<div class="mt-12">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Vos Quiz et Projets</h2>
+    <div class="overflow-x-auto">
+        <table class="w-full table-auto border border-gray-300 rounded-lg shadow-md">
+            <thead class="bg-gray-200">
+                <tr>
+                    <th class="p-3 text-left">Type</th>
+                    <th class="p-3 text-left">Nom</th>
+                    <th class="p-3 text-left">Groupes Assignés</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for quiz in professor_quizzes %} <!--get max id of professor quizzes ID-->
+                <tr class="border-b border-gray-300">
+                    <td class="p-3">Quiz</td>
+                    <td class="p-3">
+                        <a href="#" class="btn btn-link modal-button"
+                            data-pk="{{ quiz.pk }}"
+                            data-quiz="{{ quiz.name }}"
+                            data-questions="{{ quiz.number_of_questions }}"
+                            data-time="{{ quiz.time }}"
+                            data-difficulty="{{ quiz.difficulty }}"
+                            data-pass="{{ quiz.required_score }}"
+                            data-bs-toggle="modal"
+                            data-bs-target="#detailsModal">
+                            {{ quiz.name }}
+                        </a>
+                    </td>
+                    <td class="p-3">
+                        {% for group in quiz.groups.all %}
+                            <span class="block">{{ group.name }}</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
 
-                    {% for project in professor_projects %}
-                    <tr class="border-b border-gray-300">
-                        <td class="p-3">Projet</td>
-                        <td class="p-3">
-                            <a href="#" class="project-link text-green-500 underline"
-                                data-pk="{{ project.pk }}"
-                                data-title="{{ project.title }}"
-                                data-description="{{ project.description }}"
-                                data-bs-toggle="modal"
-                                data-bs-target="#detailsModal">
-                                {{ project.title }}
-                            </a>
-                        </td>
-                        <td class="p-3">
-                            {% for group in project.groups.all %}
-                                <span class="block">{{ group.name }}</span>
-                            {% endfor %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                {% for project in professor_projects %}
+                <tr class="border-b border-gray-300">
+                    <td class="p-3">Projet</td>
+                    <td class="p-3">
+                        <a href="#" class="project-link text-green-500 underline"
+                            data-pk="{{ project.pk }}"
+                            data-title="{{ project.title }}"
+                            data-description="{{ project.description }}"
+                            data-bs-toggle="modal"
+                            data-bs-target="#detailsModal">
+                            {{ project.title }}
+                        </a>
+                    </td>
+                    <td class="p-3">
+                        {% for group in project.groups.all %}
+                            <span class="block">{{ group.name }}</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
-{% if request.user.role == "professor" %}
-    <a href="{% url 'create_quiz' %}" class="btn btn-primary">Create Quiz</a>
-{% endif %}
-<br>
-{% if request.user.role == "professor" %}
-    <a href="{% url 'create_project' %}" class="btn btn-primary">Create Project</a>
-{% endif %}
+</div>
 
-{% comment %} <a href="{% url 'download_student_pdf' %}" class="btn btn-primary">Download PDF</a> {% endcomment %}
-
+<!-- Buttons at the bottom -->
+<div class="container mx-auto p-6 d-flex justify-content-start gap-3">
+    {% if request.user.role == "professor" %}
+        <a href="{% url 'create_quiz' %}" class="btn btn-primary">Create Quiz</a>
+        <a href="{% url 'create_project' %}" class="btn btn-primary">Create Project</a>
+    {% endif %}
+    {% comment %} <a href="{% url 'download_student_pdf' %}" class="btn btn-primary">Download PDF</a> {% endcomment %}
+</div>
 
 {% endblock %}

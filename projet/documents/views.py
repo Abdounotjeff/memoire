@@ -31,18 +31,26 @@ from django.utils.timezone import now
 from .forms import QuizForm, projectForm
 from django.shortcuts import get_object_or_404
 from datetime import datetime
-from .forms import AcademicSessionForm, GroupForm, UserActivationForm
-
-
 
 User = get_user_model()  # Get the CustomUser model
 
 # Create your views here.
 
 def index(request):
+    if request.user.is_authenticated:  
+        if request.user.is_professor:
+            messages.success(request, "Welcome!")
+            return redirect('professor')
+        elif request.user.is_student:
+            messages.success(request, "Welcome!")
+            return redirect('student')
+
     return render(request, 'pages/index.html')
 
+def about(request):
+    return render(request, 'pages/about.html')
 
+    
 
 def activate(request, uidb64, token):
     try:
@@ -152,41 +160,41 @@ def send_quiz_notification_email_delete(request, user, to_email, quiz):
         messages.error(request, f'Failed to send quiz notification to {to_email}.')
 
 
-def activateEmail(request, user, to_email):
-    mail_subject = "Activate your user account."
-    message = render_to_string("pages/user_email.html",{
-        'user':user,
-        'domain': get_current_site(request).domain,
-        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-        'token': account_activation_token.make_token(user),
-        "protocol": 'http' 
-    })
+# def activateEmail(request, user, to_email):
+#     mail_subject = "Activate your user account."
+#     message = render_to_string("pages/user_email.html",{
+#         'user':user,
+#         'domain': get_current_site(request).domain,
+#         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+#         'token': account_activation_token.make_token(user),
+#         "protocol": 'http' 
+#     })
 
-    email = EmailMessage(mail_subject, message, to=[to_email], connection=get_connection())
-    if email.send():
-        messages.success(request, f'{user}. SVP vérifier votre email : {to_email}.')
-    else:
-        messages.error(request, f'Something went wrong..., try verifying your email!') 
+#     email = EmailMessage(mail_subject, message, to=[to_email], connection=get_connection())
+#     if email.send():
+#         messages.success(request, f'{user}. SVP vérifier votre email : {to_email}.')
+#     else:
+#         messages.error(request, f'Something went wrong..., try verifying your email!') 
 
 
-def resend_verification(request):
-    email = request.session.get('pending_email')  # Get email from session
+# def resend_verification(request):
+#     email = request.session.get('pending_email')  # Get email from session
 
-    if not email:
-        messages.error(request, "Aucune adresse email trouvée. Inscrivez-vous d'abord.")
-        return redirect("registerPage")  # Redirect to registration if no email is found
+#     if not email:
+#         messages.error(request, "Aucune adresse email trouvée. Inscrivez-vous d'abord.")
+#         return redirect("registerPage")  # Redirect to registration if no email is found
 
-    try:
-        user = User.objects.get(email=email)
-        if user.is_active:
-            messages.info(request, "Ce compte est déjà activé.")
-        else:
-            activateEmail(request, user, user.email)
-            messages.success(request, "Un nouvel email de vérification a été envoyé !")
-    except User.DoesNotExist:
-        messages.error(request, "Aucun compte trouvé avec cet email.")
+#     try:
+#         user = User.objects.get(email=email)
+#         if user.is_active:
+#             messages.info(request, "Ce compte est déjà activé.")
+#         else:
+#             activateEmail(request, user, user.email)
+#             messages.success(request, "Un nouvel email de vérification a été envoyé !")
+#     except User.DoesNotExist:
+#         messages.error(request, "Aucun compte trouvé avec cet email.")
 
-    return render(request, "pages/verify_code.html", {"user_email": email})
+#     return render(request, "pages/verify_code.html", {"user_email": email})
 
 def registerPage(request):
     if request.method == 'POST':
@@ -195,9 +203,9 @@ def registerPage(request):
             user = form.save(commit=False) 
             user.is_active=False
             user.save() 
-            email = form.cleaned_data.get('email')
-            request.session['pending_email'] = email  # Store email in session
-            activateEmail(request, user, email)
+            # email = form.cleaned_data.get('email')
+            # request.session['pending_email'] = email  # Store email in session
+            # activateEmail(request, user, email)
             return redirect('activ')
         else:
             print(form.errors)  # Debugging: Prints form errors in console
@@ -214,15 +222,20 @@ def loginPage(request):
     context = {}
     if request.method == 'POST':
         username = request.POST.get('username')
-        password =request.POST.get('password')
+        password = request.POST.get('password')
 
         user = authenticate(request, username=username, password=password)
 
-        if user is not None:
-            login(request, user)
-            return redirect('index')
+        if user is not None and user.is_active:
+            if user.role == 'professor':  # Check the role directly on the CustomUser model
+                login(request, user)
+                return redirect('professor')
+            elif user.role == 'student':  # Check the role directly on the CustomUser model
+                login(request, user)
+                return redirect('student')
         else:
             messages.info(request, 'Username OR password is incorrect')
+
     return render(request, 'pages/login.html', context={})
 
 
@@ -237,6 +250,9 @@ def activ(request):
 # 📌 PROFESSOR DASHBOARD: Show Groups & Students' Grades
 @login_required
 def professor_dashboard(request):
+    if request.user.is_student:
+        messages.error(request, "You are not authorized to edit this quiz.")
+        return redirect('index')
     professor = Professor.objects.get(user=request.user)
     groups = professor.groups.all()
 
@@ -336,7 +352,7 @@ def update_project_scores(request):
 
 @login_required
 def create_quiz(request):
-    if not request.user.is_professor() or not hasattr(request.user, 'professor'):
+    if not request.user.is_professor or not hasattr(request.user, 'professor'):
         return redirect('index')
 
     professor = request.user.professor  
@@ -372,7 +388,7 @@ def edit_quiz(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id)
 
     # Ensure only the professor who created the quiz can edit it
-    if not request.user.is_professor() or quiz.created_by != request.user.professor:
+    if not request.user.is_professor or quiz.created_by != request.user.professor:
         messages.error(request, "You are not authorized to edit this quiz.")
         return redirect('index')  # Redirect unauthorized users
 
@@ -428,7 +444,7 @@ def delete_quiz(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id)
 
     # Ensure only the professor who created the quiz can delete it
-    if not request.user.is_professor() or quiz.created_by != request.user.professor:
+    if not request.user.is_professor or quiz.created_by != request.user.professor:
         messages.error(request, "You are not authorized to delete this quiz.")
         return redirect('index')
 
@@ -454,7 +470,7 @@ def delete_quiz(request, quiz_id):
 @login_required
 def create_project(request):
 
-    if not request.user.is_professor():
+    if not request.user.is_professor:
         messages.error(request, "You are not authorized!.")
         return redirect('index')  
     professor = request.user.professor
@@ -487,7 +503,7 @@ def edit_project(request, project_id):
     project = get_object_or_404(ProjectSubmissionTask, id=project_id)
 
     # Ensure only the professor who created the quiz can edit it
-    if not request.user.is_professor():
+    if not request.user.is_professor:
         messages.error(request, "You are not authorized to edit this quiz.")
         print("hh")
         return redirect('index')  # Redirect unauthorized users
@@ -506,7 +522,7 @@ def delete_project(request, project_id):
     project = get_object_or_404(ProjectSubmissionTask, id=project_id)
 
     # Ensure only the professor who created the quiz can delete it
-    if not request.user.is_professor():
+    if not request.user.is_professor:
         messages.error(request, "You are not authorized to delete this project.")
         return redirect('index')
 
@@ -532,7 +548,7 @@ def delete_project(request, project_id):
 @login_required
 def student_dashboard(request):
     # Ensure the user is a student
-    if request.user.is_professor():
+    if request.user.is_professor:
         messages.error(request, "You are not authorized!.")
         return redirect('index')
 
@@ -604,42 +620,42 @@ def project_submission_view(request, task_id):
 
 
 
-# ✅ Step 1: Create Academic Session
-def add_academic_session(request):
-    if request.method == "POST":
-        form = AcademicSessionForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('add_group')  # Redirect to Group Creation Page
-    else:
-        form = AcademicSessionForm()
+# # ✅ Step 1: Create Academic Session
+# def add_academic_session(request):
+#     if request.method == "POST":
+#         form = AcademicSessionForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('add_group')  # Redirect to Group Creation Page
+#     else:
+#         form = AcademicSessionForm()
     
-    return render(request, "admin/add_academic_session.html", {"form": form})
+#     return render(request, "admin/add_academic_session.html", {"form": form})
 
-# ✅ Step 2: Create Groups
-def add_group(request):
-    if request.method == "POST":
-        form = GroupForm(request.POST)
-        if form.is_valid():
-            form.save()
-            if "add_another" in request.POST:
-                return redirect('add_group')  # Stay on the same page to add more groups
-            return redirect('activate_users')  # Redirect to User Activation Page
-    else:
-        form = GroupForm()
+# # ✅ Step 2: Create Groups
+# def add_group(request):
+#     if request.method == "POST":
+#         form = GroupForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             if "add_another" in request.POST:
+#                 return redirect('add_group')  # Stay on the same page to add more groups
+#             return redirect('activate_users')  # Redirect to User Activation Page
+#     else:
+#         form = GroupForm()
     
-    return render(request, "admin/add_group.html", {"form": form})
+#     return render(request, "admin/add_group.html", {"form": form})
 
-# ✅ Step 3: Activate Users
-def activate_users(request):
-    users = User.objects.all()
+# # ✅ Step 3: Activate Users
+# def activate_users(request):
+#     users = User.objects.all()
     
-    if request.method == "POST":
-        for user in users:
-            form = UserActivationForm(request.POST, instance=user)
-            if form.is_valid():
-                form.save()
+#     if request.method == "POST":
+#         for user in users:
+#             form = UserActivationForm(request.POST, instance=user)
+#             if form.is_valid():
+#                 form.save()
         
-        return redirect('index')  # Redirect to some admin home page
+#         return redirect('index')  # Redirect to some admin home page
 
-    return render(request, "admin/activate_users.html", {"users": users})
+#     return render(request, "admin/activate_users.html", {"users": users})

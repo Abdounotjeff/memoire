@@ -5,22 +5,25 @@
 
 {% endblock title %}
 
+
+
+
 {% block content %}
 <section class ="w-full min-h-screen flex flex-row-reverse" style="background-image: url('{% static "img/back5.png" %}'); background-size: cover;">
 <div class="w-1/2  flex flex-col items-center justify-center bg-cover bg-center bg-fixed pl-3 md:px-58 py-8 text-center">
   
     <h2 class="block mb-7 text-5xl font-semibold text-white">A new way to learn </h2>
-    <h3 class="text-2x font-light text-white tracking-wide mt-2 mb-6">TestHub est une platforme d'apprentissage en ligne fournie par des étudiants pour les étudiants <br> pour mieux apprendre et valider Leurs travailles</h3>
-    <a href="#" class="px-6 py-3 bg-transparent text-white font-semibold rounded-full flex items-center space-x-2 shadow-md hover:bg-white hover:text-gray-900 transition duration-300">
+    <h3 class="text-2x font-light text-white tracking-wide mt-2 mb-6">IQlevel is an online learning Platform made by a student to students <br> For better learning and work submission</h3>
+    <a href="{% url "registerPage" %}" class="px-6 py-3 bg-transparent text-white font-semibold rounded-full flex items-center space-x-2 shadow-md hover:bg-white hover:text-gray-900 transition duration-300">
       <span>Créer un Compte</span>
       <span>➤</span>
   </a>
   
     
     <div class="flex space-x-6 mt-6">
-        <a href="https://www.facebook.com/abdou.japoni.961/" class="text-gray-900 text-3xl"><i class="fa-brands fa-facebook"></i></a>
-        <a href="https://www.instagram.com/abdou._.rs/" class="text-gray-900 text-3xl"><i class="fa-brands fa-square-instagram"></i></a>
-        <a href="https://www.linkedin.com/in/abderrahmen-berradj-726521270/" class="text-gray-900 text-3xl"><i class="fa-brands fa-linkedin"></i></a>
+        <a href="https://www.facebook.com/abdou.japoni.961/" class="text-white text-3xl"><i class="fa-brands fa-facebook"></i></a>
+        <a href="https://www.instagram.com/abdou._.rs/" class="text-white text-3xl"><i class="fa-brands fa-square-instagram"></i></a>
+        <a href="https://www.linkedin.com/in/abderrahmen-berradj-726521270/" class="text-white text-3xl"><i class="fa-brands fa-linkedin"></i></a>
     </div>
   
   </div>

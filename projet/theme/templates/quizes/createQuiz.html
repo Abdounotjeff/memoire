@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Quiz</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+Create Quiz
+{% endblock title %}
+{% block scripts %}
     <script>
         function addQuestionField() {
             const container = document.getElementById("questions-container");
@@ -92,10 +91,24 @@
             document.querySelector("#saveQuizButton").addEventListener("click", confirmSaveQuiz);
         });
     </script>
-</head>
-<body class="bg-gray-100 flex justify-center items-center min-h-screen">
+{% endblock scripts %}
+
+
+{% block content %}
+
+<section class="bg-gray-100 flex justify-center items-center min-h-screen">
     <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
         <h1 class="text-2xl font-bold text-gray-700 mb-6">Create Quiz</h1>
+        {% if messages %}
+    <div class="fixed top-5 right-1/2 space-y-2 z-50">
+        {% for message in messages %}
+            <div class="px-4 py-3 rounded-lg shadow-md text-white 
+                {% if message.tags == 'error' %} bg-red-500 {% elif message.tags == 'success' %} bg-green-500 {% elif message.tags == 'warning' %} bg-yellow-500 {% elif message.tags == 'info' %} bg-blue-500 {% else %} bg-gray-500 {% endif %} ">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
         
         <form method="POST" action="{% url 'create_quiz' %}" class="space-y-4">
             {% csrf_token %}
@@ -106,5 +119,5 @@
                 class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">Save Quiz</button>
         </form>
     </div>
-</body>
-</html>
+</section>
+{% endblock content %}

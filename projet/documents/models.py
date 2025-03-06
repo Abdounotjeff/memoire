@@ -9,17 +9,20 @@ class CustomUser(AbstractUser):
     ROLE_CHOICES = (
         ('student', 'student'),
         ('professor', 'professor'),
-        ('admin', 'admin'),
     )
     id = models.AutoField(primary_key=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='professor')
     is_active = models.BooleanField(default=False)
 
+
+    @property
     def is_student(self):
         return self.role == 'student'
     
+    @property
     def is_professor(self):
         return self.role == 'professor'
+
 
     
 class Student(models.Model):
