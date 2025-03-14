@@ -10,7 +10,8 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode
-
+from django.core.exceptions import ValidationError
+from django import forms
 from documents.tokens import account_activation_token  # Ensure this exists
 from .models import Student, Professor  # Import other models if needed
 
@@ -81,14 +82,62 @@ class CustomUserAdmin(UserAdmin):
 
         return redirect(reverse('admin:documents_customuser_changelist'))  # Redirect back to the users list
 
+# Custom form for ProfessorAdmin
+class ProfessorAdminForm(forms.ModelForm):
+    class Meta:
+        model = Professor
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filter users to show only those with the professor role and not already assigned
+        assigned_users = Professor.objects.values_list('user_id', flat=True)
+        self.fields['user'].queryset = User.objects.filter(role='professor')
+
+
 # Professor Admin
 class ProfessorAdmin(admin.ModelAdmin):
+    form = ProfessorAdminForm
     list_display = ('user',)
     search_fields = ('user__username',)
     filter_horizontal = ('groups',)  # To select multiple groups in the admin panel
+    def save_model(self, request, obj, form, change):
+        """
+        Enforce that each group can only have one professor.
+        """
+        try:
+            for group in obj.groups.all():
+                existing_professor = Professor.objects.filter(groups=group).exclude(id=obj.id).first()
+                if existing_professor:
+                    raise ValidationError(f"Group '{group.name}' is already assigned to Professor {existing_professor.user.username}.")
+            
+            super().save_model(request, obj, form, change)
+            messages.success(request, "Professor saved successfully.")  # Optional success message
+
+        except ValidationError as e:
+            self.message_user(request, e.message, level=messages.ERROR)  # Show error in red
+
+# Custom form for StudentAdmin
+class StudentAdminForm(forms.ModelForm):
+    class Meta:
+        model = Student
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filter users to show only those with the student role and not already assigned
+        assigned_users = Student.objects.values_list('user_id', flat=True)
+        self.fields['user'].queryset = User.objects.filter(role='student')
+
+
+# Admin configurations
+class StudentAdmin(admin.ModelAdmin):
+    form = StudentAdminForm
+    list_display = ('user', 'group')
+
 
 
 # Register models
 admin.site.register(User, CustomUserAdmin)
-admin.site.register(Student)
+admin.site.register(Student, StudentAdmin)
 admin.site.register(Professor, ProfessorAdmin)

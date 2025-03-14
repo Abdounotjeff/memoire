@@ -14,7 +14,7 @@ from django.contrib.auth.models import User
 class CreateUserForm(UserCreationForm):
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'first_name', 'last_name', 'password1', 'password2', 'role']
+        fields = ['username','id', 'email', 'first_name', 'last_name', 'password1', 'password2', 'role']
 
     def __init__(self, *args, **kwargs):
         super(CreateUserForm, self).__init__(*args, **kwargs)
@@ -29,6 +29,10 @@ class CreateUserForm(UserCreationForm):
         self.fields['email'].widget.attrs.update({
             'class': common_classes,
             'placeholder': "Entrez votre adresse e-mail"
+        })
+        self.fields['id'].widget.attrs.update({
+            'class': common_classes,
+            'placeholder': "BAC year and id ex:202534798407"
         })
 
         # Add first_name and last_name fields
@@ -72,7 +76,7 @@ class QuizForm(forms.ModelForm):
         fields = [
             'name', 'topic', 'number_of_questions', 'time', 
             'difficulty', 'required_score', 'start_time', 'end_time', 'groups',
-            'questions', 'answers', 'correct_answers'  # Include custom fields
+            'questions', 'answers', 'correct_answers','id'  # Include custom fields
         ]
         widgets = {
             'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),

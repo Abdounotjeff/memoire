@@ -547,7 +547,6 @@ def delete_project(request, project_id):
 
 @login_required
 def student_dashboard(request):
-    # Ensure the user is a student
     if request.user.is_professor:
         messages.error(request, "You are not authorized!.")
         return redirect('index')
@@ -577,13 +576,21 @@ def student_dashboard(request):
     available_projects = available_projects.exclude(end_time__lt=current_time)
     available_quizzes = available_quizzes.exclude(end_time__lt=current_time)
 
+    # Fetch quiz results for notification
+    quiz_results = Result.objects.filter(student=student)
+
+    # Fetch graded project submissions for notification
+    graded_projects = ProjectSubmission.objects.filter(student=student).exclude(grade=None)
+
     context = {
         'student': student,
         'available_projects': available_projects,
         'available_quizzes': available_quizzes,
+        'quiz_results': quiz_results,
+        'graded_projects': graded_projects,
     }
-    return render(request, 'pages/student_dashboard.html', context)
 
+    return render(request, 'pages/student_dashboard.html', context)
 
 @login_required
 def project_submission_view(request, task_id):

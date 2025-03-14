@@ -15,6 +15,24 @@
     </div>
 {% endif %}
 
+<div class="space-y-4">
+    {% for result in quiz_results %}
+        <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-lg shadow-md">
+            <p class="font-semibold">You have been graded <span class="text-blue-900 font-bold">{{ result.score }}%</span> for the Quiz: 
+            <span class="italic">"{{ result.quiz.name }}"</span>.</p>
+        </div>
+    {% endfor %}
+
+    {% for project in graded_projects %}
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg shadow-md">
+            <p class="font-semibold">You have been graded <span class="text-green-900 font-bold">{{ project.grade }}%</span> for the Project: 
+            <span class="italic">"{{ project.task.title }}"</span>.</p>
+        </div>
+    {% endfor %}
+</div>
+
+
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         <!-- Projects Section -->
         <div>

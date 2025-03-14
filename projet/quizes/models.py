@@ -15,7 +15,7 @@ class Quiz(models.Model):
     name = models.CharField(max_length=120)
     topic = models.CharField(max_length=120)
     number_of_questions = models.IntegerField()
-    time = models.IntegerField(help_text="duration of quiz in seconds")
+    time = models.IntegerField(help_text="duration of quiz in Minutes")
     difficulty = models.CharField(max_length=6, choices=DIFF_CHOICES)
     required_score = models.IntegerField(help_text="required score to pass the quiz")
     created_by = models.ForeignKey(Professor, on_delete=models.CASCADE)
