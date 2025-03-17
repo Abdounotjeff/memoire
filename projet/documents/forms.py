@@ -9,6 +9,7 @@ from groupe.models import Group
 from projetTask.models import ProjectSubmissionTask
 from SessionAcademique.models import AcademicSession
 from django.contrib.auth.models import User
+from meetings.models import meeting
 
 
 class CreateUserForm(UserCreationForm):
@@ -204,7 +205,50 @@ class projectForm(forms.ModelForm):
             projet.save()
             self.save_m2m()  # Save ManyToMany relationships
         return projet
+
+class meetingForm(forms.ModelForm):
+    class Meta:
+        model = meeting
+        fields = ['title', 'link', 'description', 'groups', 'start_time', 'end_time']
+        widgets = {
+            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'groups': forms.CheckboxSelectMultiple(),  # Allow multiple group selection
+        }
+
+    def __init__(self, *args, **kwargs):
+        professor = kwargs.pop('professor', None)  # Get the logged-in professor
+        super().__init__(*args, **kwargs)
         
+        if professor:
+            # Limit groups to only those assigned to the professor
+            self.fields['groups'].queryset = professor.groups.all()
+        
+        common_classes = 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm'
+        border_class = 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm'
+
+        self.fields['title'].widget.attrs.update({
+            'class': common_classes,
+            'placeholder': "ex: ADS Pro"
+        })
+        self.fields['link'].widget.attrs.update({
+            'class': common_classes,
+            'placeholder': "https://meet.google.com/"
+        })
+        self.fields['description'].widget.attrs.update({
+            'placeholder': "ex: Description here...",
+            'class': border_class
+        })
+        
+
+    def save(self, commit=True, professor=None):
+        meet = super().save(commit=False)
+        if professor:
+            meet.created_by = professor  # Assign the logged-in professor
+        if commit:
+            meet.save()
+            self.save_m2m()  # Save ManyToMany relationships
+        return meet
 # class AcademicSessionForm(forms.ModelForm):
 #     class Meta:
 #         model = AcademicSession

@@ -28,9 +28,10 @@ from questions.models import Question, Answer
 from .models import Professor
 from groupe.models import Group
 from django.utils.timezone import now
-from .forms import QuizForm, projectForm
+from .forms import QuizForm, projectForm, meetingForm
 from django.shortcuts import get_object_or_404
 from datetime import datetime
+from meetings.models import meeting
 
 User = get_user_model()  # Get the CustomUser model
 
@@ -84,6 +85,29 @@ def send_email_to_student_project(request, student_email, projet):
     except User.DoesNotExist:
         messages.error(request, f"User with email {student_email} does not exist.")
 
+def send_email_to_student_meeting(request, student_email, meet):
+    try:
+        user = User.objects.get(email=student_email)
+        send_meeting_notification_email(request, user, student_email, meet)
+    except User.DoesNotExist:
+        messages.error(request, f"User with email {student_email} does not exist.")
+
+def send_meeting_notification_email(request, user, to_email, meet):
+    mail_subject = f"New Meeting Available: {meet.title}"
+    message = render_to_string("pages/meetingNot.html", {
+        'user': user,
+        'meet': meet,
+        'domain': get_current_site(request).domain,
+        'protocol': 'http',  # Change to 'https' if using SSL
+    })
+
+    email = EmailMessage(mail_subject, message, to=[to_email], connection=get_connection())
+    if email.send():
+        messages.success(request, f'meeting notification sent to {user.first_name} {user.last_name}.')
+    else:
+        messages.error(request, f'Failed to send meeting notification to {user.first_name} {user.last_name}.')
+
+
 def send_project_notification_email(request, user, to_email, projet):
     mail_subject = f"New project Available: {projet.title}"
     message = render_to_string("pages/studentNotPro.html", {
@@ -98,6 +122,14 @@ def send_project_notification_email(request, user, to_email, projet):
         messages.success(request, f'Project Task notification sent to {user.first_name} {user.last_name}.')
     else:
         messages.error(request, f'Failed to send Project Task notification to {user.first_name} {user.last_name}.')
+
+
+def send_email_to_student_delete_meeting(request, student_email, meet):
+    try:
+        user = User.objects.get(email=student_email)
+        send_quiz_notification_email_delete_meeting(request, user, student_email, meet)
+    except User.DoesNotExist:
+        messages.error(request, f"User with email {student_email} does not exist.")
 
 def send_quiz_notification_email(request, user, to_email, quiz):
     mail_subject = f"New Quiz Available: {quiz.name}"
@@ -142,6 +174,23 @@ def send_quiz_notification_email_delete_project(request, user, to_email, projet)
         messages.success(request, f'Project Task notification sent to {user.first_name} {user.last_name}.')
     else:
         messages.error(request, f'Failed to send Project Task notification to {user.first_name} {user.last_name}.')
+
+
+def send_quiz_notification_email_delete_meeting(request, user, to_email, meet):
+    mail_subject = f"meeting removed: {meet.title}"
+    message = render_to_string("pages/meetingdelnot.html", {
+        'user': user,
+        'meet': meet,
+        'domain': get_current_site(request).domain,
+        'protocol': 'http',  # Change to 'https' if using SSL
+    })
+
+    email = EmailMessage(mail_subject, message, to=[to_email], connection=get_connection())
+    if email.send():
+        messages.success(request, f'meeting notification sent to {user.first_name} {user.last_name}.')
+    else:
+        messages.error(request, f'Failed to send meeting notification to {user.first_name} {user.last_name}.')
+
 
 
 def send_quiz_notification_email_delete(request, user, to_email, quiz):
@@ -258,6 +307,7 @@ def professor_dashboard(request):
 
     professor_quizzes = Quiz.objects.filter(created_by=professor)
     professor_projects = ProjectSubmissionTask.objects.filter(created_by=professor)
+    professor_meeting = meeting.objects.filter(created_by=professor)
 
     group_data = []
     for group in groups:
@@ -292,6 +342,7 @@ def professor_dashboard(request):
             "student": student,
             "quiz_scores": quiz_scores,
             "project_scores": project_scores,
+            
             })
 
 
@@ -301,6 +352,7 @@ def professor_dashboard(request):
         "group_data": group_data,
         "professor_quizzes": professor_quizzes,
         "professor_projects": professor_projects,
+        "professor_meetings": professor_meeting,
     }
 
     return render(request, "pages/professor_dashboard.html", context)
@@ -544,6 +596,81 @@ def delete_project(request, project_id):
 
     return render(request, 'projet/edit_project.html', {'project': project})
 
+@login_required
+def create_meeting(request):
+    if not request.user.is_professor:
+        messages.error(request, "You are not authorized!.")
+        return redirect('index')  
+    professor = request.user.professor
+    if request.method == 'POST':
+        form = meetingForm(request.POST, professor=professor)
+        if form.is_valid():
+            meet = form.save(professor = professor)
+
+            students_emails = list(CustomUser.objects.filter(
+                student__group__in=meet.groups.all(),
+                role="student"
+            ).values_list("email", flat=True))
+
+            print("students_emails: ", students_emails)
+            
+            for student_email in students_emails:
+                send_email_to_student_project(request, student_email, meet)
+
+            messages.success(request, "Meeting created successfully!")
+            return redirect('index')  # Move redirect outside the loop
+
+    else:
+        form = meetingForm(professor = professor)
+
+    return render(request, 'pages/create_meeting.html', {'form': form})   
+
+@login_required
+def edit_meeting(request, meeting_id):
+    meet = get_object_or_404(meeting, id=meeting_id)
+
+    # Ensure only the professor who created the quiz can edit it
+    if not request.user.is_professor:
+        messages.error(request, "You are not authorized to edit this quiz.")
+        print("hh")
+        return redirect('index')  # Redirect unauthorized users
+    
+    if request.method == "POST":
+        form = meetingForm(request.POST, instance=meet, professor=request.user.professor)
+        if form.is_valid():
+            form.save()
+            return redirect('index')
+    else:
+        form = meetingForm(instance=meet, professor=request.user.professor)
+    return render(request, 'pages/edit_meeting.html', {'form': form, 'meet': meet})
+
+@login_required
+def delete_meeting(request, meeting_id):
+    meet = get_object_or_404(meeting, id=meeting_id)
+
+    # Ensure only the professor who created the quiz can delete it
+    if not request.user.is_professor:
+        messages.error(request, "You are not authorized to delete this meeting.")
+        return redirect('index')
+
+    if request.method == "POST":  # Confirm deletion
+        students_emails = CustomUser.objects.filter(
+            student__group__in=meet.groups.all(),  # Get students linked to the selected groups
+            role="student",  # Ensure they are students
+            ).values_list("email", flat=True)  # Extract only emails
+
+            # Convert to a list (if needed)
+        students_emails = list(students_emails)
+        print("students_emails: ", students_emails)
+            
+        for student_email in students_emails:
+            send_email_to_student_delete_project(request, student_email, meet)
+        meet.delete()
+        messages.success(request, "meeting deleted successfully!")
+        return redirect('professor')
+
+    return render(request, 'projet/edit_project.html', {'project': meet})
+
 
 @login_required
 def student_dashboard(request):
@@ -568,6 +695,12 @@ def student_dashboard(request):
         end_time__gte=current_time
     ).distinct()
 
+    available_meetings = meeting.objects.filter(
+        groups=student.group,
+        start_time__lte=current_time,
+        end_time__gte=current_time
+    ).distinct()
+
     # Filter out quizzes where the student has already submitted results
     completed_quizzes = Result.objects.filter(student=student).values_list('quiz_id', flat=True)
     available_quizzes = available_quizzes.exclude(id__in=completed_quizzes)
@@ -575,7 +708,7 @@ def student_dashboard(request):
     # Remove expired projects and quizzes
     available_projects = available_projects.exclude(end_time__lt=current_time)
     available_quizzes = available_quizzes.exclude(end_time__lt=current_time)
-
+    available_meetings = available_meetings.exclude(end_time__lt=current_time)
     # Fetch quiz results for notification
     quiz_results = Result.objects.filter(student=student)
 
@@ -586,6 +719,7 @@ def student_dashboard(request):
         'student': student,
         'available_projects': available_projects,
         'available_quizzes': available_quizzes,
+        'available_meetings': available_meetings,
         'quiz_results': quiz_results,
         'graded_projects': graded_projects,
     }

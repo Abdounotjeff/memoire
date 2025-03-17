@@ -1,0 +1,12 @@
+{% autoescape off %}
+    Hello {{ user.first_name }},
+    A new Meeting of Title {{ meet.title }} has been assigned to your group.
+    Description: 
+    {{ meet.description }}
+    
+    The meeting will be available from {{ meet.start_time }} to {{ meet.end_time }}
+
+    You can access the meeting by logging into your student portal.
+
+    Best regards, Your Instructor
+{% endautoescape %}

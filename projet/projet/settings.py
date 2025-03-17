@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'questions',
     'results',
     'groupe',
+    'meetings',
     'projetSubmission.apps.ProjetsubmissionConfig',
     'projetTask.apps.ProjettaskConfig',
     'SessionAcademique.apps.SessionacademiqueConfig',

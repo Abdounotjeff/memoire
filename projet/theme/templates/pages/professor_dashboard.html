@@ -198,6 +198,28 @@
                     </td>
                 </tr>
                 {% endfor %}
+
+                {% for meet in professor_meetings %}
+                <tr class="border-b border-gray-300">
+                    <td class="p-3">meeting</td>
+                    <td class="p-3">
+                        <a href="#" class="meeting-link text-green-500 underline"
+                            data-pk="{{ meet.pk }}"
+                            data-title="{{ meet.title }}"
+                            data-link="{{ meet.link }}"
+                            data-description="{{ meet.description }}"
+                            data-bs-toggle="modal"
+                            data-bs-target="#detailsModal">
+                            {{ meet.title }}
+                        </a>
+                    </td>
+                    <td class="p-3">
+                        {% for group in meet.groups.all %}
+                            <span class="block">{{ group.name }}</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
@@ -209,6 +231,7 @@
     {% if request.user.role == "professor" %}
         <a href="{% url 'create_quiz' %}" class="btn btn-primary">Create Quiz</a>
         <a href="{% url 'create_project' %}" class="btn btn-primary">Create Project</a>
+        <a href="{% url 'create_meeting'%}" class="btn btn-primary">Create Meeting</a>
     {% endif %}
     {% comment %} <a href="{% url 'download_student_pdf' %}" class="btn btn-primary">Download PDF</a> {% endcomment %}
 </div>
