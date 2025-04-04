@@ -12,16 +12,13 @@ from quizes.models import Quiz
 from results.models import Result
 from projetSubmission.models import ProjectSubmission
 from projetTask.models import ProjectSubmissionTask
-import secrets
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_bytes, force_str
 from .tokens import account_activation_token
-import ssl
 from django.core.mail import get_connection
-from django.db.models import Avg, Count, Sum
 from django.http import JsonResponse
 import json
 from questions.models import Question, Answer
@@ -439,58 +436,52 @@ def create_quiz(request):
 def edit_quiz(request, quiz_id):    
     quiz = get_object_or_404(Quiz, id=quiz_id)
 
-    # Ensure only the professor who created the quiz can edit it
     if not request.user.is_professor or quiz.created_by != request.user.professor:
         messages.error(request, "You are not authorized to edit this quiz.")
-        return redirect('index')  # Redirect unauthorized users
+        return redirect('index')
 
     if request.method == "POST":
         form = QuizForm(request.POST, instance=quiz, professor=request.user.professor)
         if form.is_valid():
             form.save()
 
-            # Handle questions and answers
-            questions_texts = request.POST.getlist("questions[]")  # Get all questions
-            correct_answers = request.POST.getlist("correct_answers[]")  # Get correct answers
+            questions_texts = request.POST.getlist("questions[]")
+            # CORRECTED: Retrieve correct answers by question index
+            correct_answers = [
+                request.POST.get(f"correct_answers[{i}]", 0)  # Default to 0 if missing
+                for i in range(len(questions_texts))
+            ]
 
-            # Clear existing questions (optional, but be cautious)
             quiz.question_set.all().delete()
 
             for i, question_text in enumerate(questions_texts):
                 if question_text.strip():
-                    # Create a new question
                     question = Question.objects.create(
                         quiz=quiz,
                         text=question_text,
                         created=datetime.now()
                     )
 
-                    # Get answers for this question
                     answers_texts = request.POST.getlist(f"answers[{i}][]")
-                    
-                    # Ensure there's a correct answer for this question
-                    if i < len(correct_answers) and correct_answers[i]:
-                        correct_answer_index = int(correct_answers[i])
-                    else:
-                        correct_answer_index = 0  # Default to the first answer if no correct answer is selected
+                    # Parse the correct answer index for this question
+                    correct_answer_index = int(correct_answers[i]) if i < len(correct_answers) else 0
 
                     for j, answer_text in enumerate(answers_texts):
                         if answer_text.strip():
-                            # Create an answer
                             Answer.objects.create(
                                 question=question,
                                 text=answer_text,
                                 correct=(j == correct_answer_index),
                                 created=datetime.now()
                             )
+            print("Correct Answers:", correct_answers)  # After retrieving them
 
             messages.success(request, "Quiz updated successfully!")
-            return redirect('professor')  # Redirect to quiz list
+            return redirect('professor')
     else:
         form = QuizForm(instance=quiz, professor=request.user.professor)
 
     return render(request, 'quizes/edit_quiz.html', {'form': form, 'quiz': quiz})
-
 @login_required
 def delete_quiz(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id)

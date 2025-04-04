@@ -25,11 +25,11 @@ class CreateUserForm(UserCreationForm):
         # Update widget attributes for username and email
         self.fields['username'].widget.attrs.update({
             'class': common_classes,
-            'placeholder': "Entrez votre nom d'utilisateur"
+            'placeholder': "Enter your username"
         })
         self.fields['email'].widget.attrs.update({
             'class': common_classes,
-            'placeholder': "Entrez votre adresse e-mail"
+            'placeholder': "Example@mail.com"
         })
         self.fields['id'].widget.attrs.update({
             'class': common_classes,
@@ -39,11 +39,11 @@ class CreateUserForm(UserCreationForm):
         # Add first_name and last_name fields
         self.fields['first_name'].widget.attrs.update({
             'class': common_classes,
-            'placeholder': "Entrez votre prénom"
+            'placeholder': " Enter your First name"
         })
         self.fields['last_name'].widget.attrs.update({
             'class': common_classes,
-            'placeholder': "Entrez votre nom de famille"
+            'placeholder': "Enter your Last name"
         })
         self.fields['role'].widget.attrs.update({
             'class': common_classes,
@@ -52,11 +52,11 @@ class CreateUserForm(UserCreationForm):
         # Manually override password fields
         self.fields['password1'].widget = forms.PasswordInput(attrs={
             'class': common_classes,
-            'placeholder': "Entrez votre mot de passe"
+            'placeholder': "Your Password goes here"
         })
         self.fields['password2'].widget = forms.PasswordInput(attrs={
             'class': common_classes,
-            'placeholder': "Confirmez votre mot de passe"
+            'placeholder': "Confirm your Password"
         })
 
 # Difficulty choices for the quiz
@@ -67,17 +67,11 @@ DIFF_CHOICES = (
 )
 
 class QuizForm(forms.ModelForm):
-    # Custom fields for dynamically added questions and answers
-    questions = forms.CharField(widget=forms.HiddenInput(), required=False)
-    answers = forms.CharField(widget=forms.HiddenInput(), required=False)
-    correct_answers = forms.CharField(widget=forms.HiddenInput(), required=False)
-
     class Meta:
         model = Quiz
         fields = [
             'name', 'topic', 'number_of_questions', 'time', 
-            'difficulty', 'required_score', 'start_time', 'end_time', 'groups',
-            'questions', 'answers', 'correct_answers','id'  # Include custom fields
+            'difficulty', 'required_score', 'start_time', 'end_time', 'groups'
         ]
         widgets = {
             'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
@@ -120,10 +114,6 @@ class QuizForm(forms.ModelForm):
             'class': common_classes,
             'placeholder': "ex: 50"
         })
-
-        
-
-
     def save(self, commit=True, professor=None):
         quiz = super().save(commit=False)
         if professor:
