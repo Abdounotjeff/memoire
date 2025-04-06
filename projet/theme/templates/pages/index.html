@@ -19,13 +19,6 @@
       <span>➤</span>
   </a>
   
-    
-    <div class="flex space-x-6 mt-6">
-        <a href="https://www.facebook.com/abdou.japoni.961/" class="text-white text-3xl"><i class="fa-brands fa-facebook"></i></a>
-        <a href="https://www.instagram.com/abdou._.rs/" class="text-white text-3xl"><i class="fa-brands fa-square-instagram"></i></a>
-        <a href="https://www.linkedin.com/in/abderrahmen-berradj-726521270/" class="text-white text-3xl"><i class="fa-brands fa-linkedin"></i></a>
-    </div>
-  
   </div>
   <div class="image w-1/2 min-h-screen flex items-center justify-center">
     <img src="{% static 'img/web2.webp' %}" alt="illustration">
@@ -84,18 +77,28 @@
   </section>
   <!-- contact start -->
 <section id="contact" class="flex flex-col items-center py-20 px-10" style="background-image: url('{% static "img/back8.png" %}'); background-size: cover;">
-  <h1 class="font-bold text-3xl text-white mb-8 text-center">Contact us!</h1>
-  <div class="w-full md:w-1/2 bg-white rounded-lg p-6 shadow-md">
-      <form action="#" class="flex flex-col space-y-4">
-          <label for="name" class="font-semibold">Name:</label>
-          <input type="text" name="name" id="name" class="rounded-xl h-11 p-2 shadow-inner shadow-gray-400 focus:outline-none" placeholder="Enter your name" required>
-          <label for="email" class="font-semibold">Email:</label>
-          <input type="email" name="email" id="email" class="rounded-xl h-11 p-2 shadow-inner shadow-gray-400 focus:outline-none" placeholder="Example123@email.com" required>
-          <label for="message" class="font-semibold">Message:</label>
-          <textarea name="message" id="message" class="rounded-xl h-[100px] md:h-auto p-2 shadow-inner shadow-gray-400 focus:outline-none" placeholder="Your message goes here" required></textarea>
-          <input type="submit" class="button-custom" value = "Send">
-      </form>
-  </div>
+  <h1 class="font-bold text-3xl text-white mb-8 text-center">Contact us on!</h1>
+  <div class="flex flex-wrap justify-center gap-6 p-10">
+    <div class="bg-white shadow-lg rounded-lg p-6 text-center w-80 transition-transform duration-300 hover:scale-110">
+        <div class="text-blue-500 text-6xl">
+            <i class="fas fa-phone"></i>
+        </div>
+        <div class="mt-4">
+            <h3 class="text-blue-500 text-xl font-bold">Phone</h3>
+            <p class="text-gray-700">+213778359117</p>
+        </div>
+    </div>
+    <div class="bg-white shadow-lg rounded-lg p-6 text-center w-80 transition-transform duration-300 hover:scale-110">
+        <div class="text-blue-500 text-6xl">
+            <i class="fas fa-envelope"></i>
+        </div>
+        <div class="mt-4">
+            <h3 class="text-blue-500 text-xl font-bold">Email</h3>
+            <p class="text-gray-700">bajpremium@gmail.com</p>
+        </div>
+    </div>
+</div>
 </section>
+
 
 {% endblock%}
