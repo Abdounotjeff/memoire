@@ -42,6 +42,9 @@ def index(request):
         elif request.user.is_student:
             messages.success(request, "Welcome!")
             return redirect('student')
+        else:
+            messages.success(request, "Welcome!")
+            return redirect('/admin/')
 
     return render(request, 'pages/index.html')
 
@@ -279,6 +282,9 @@ def loginPage(request):
             elif user.role == 'student':  # Check the role directly on the CustomUser model
                 login(request, user)
                 return redirect('student')
+            else:
+                login(request, user)
+                return redirect('/admin/')
         else:
             messages.info(request, 'Username OR password is incorrect')
 

@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
             let editBtn = document.getElementById("editQuizBtn");
             if (editBtn) {
-                editBtn.href = `/edit-quiz/${id}/`; // Update link dynamically
+                editBtn.href = `/professor/edit-quiz/${id}/`; // Update link dynamically
             }
         
         
@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let editBtn = document.getElementById("editQuizBtn");
             if (editBtn) {
-                editBtn.href = `/edit-project/${projectId}/`; // Update link dynamically
+                editBtn.href = `/professor/edit-project/${projectId}/`; // Update link dynamically
             }
             const content = `
                 <p><strong>ID du Projet:</strong> ${projectId}</p>
@@ -96,7 +96,7 @@ meetingBtns.forEach(meet => {
 
         let editBtn = document.getElementById("editQuizBtn");
         if (editBtn) {
-            editBtn.href = `/edit-meeting/${meetId}/`; // Update link dynamically
+            editBtn.href = `/professor/edit-meeting/${meetId}/`; // Update link dynamically
         }
 
         const content = `
@@ -137,9 +137,9 @@ meetingBtns.forEach(meet => {
             }).then(response => response.json())
               .then(data => {
                   if (data.success) {
-                      alert("Notes mises à jour avec succès !");
+                      alert("notes are updated successfuly");
                   } else {
-                      alert("Erreur lors de la mise à jour des notes.");
+                      alert("Something wrong happened while updating notes.");
                   }
               });
         });

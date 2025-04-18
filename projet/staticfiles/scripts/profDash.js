@@ -3,12 +3,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const modalBtns = document.querySelectorAll(".modal-button");
     const projectBtns = document.querySelectorAll(".project-link");
+    const meetingBtns = document.querySelectorAll(".meeting-link"); 
     const modalBody = document.getElementById("modal-body-confirm");
     const modalTitle = document.getElementById("detailsModalLabel");
     const detailsModal = new bootstrap.Modal(document.getElementById("detailsModal"));
 
     console.log("Found quiz buttons:", modalBtns.length);
     console.log("Found project buttons:", projectBtns.length);
+    console.log("Found meeting buttons:", meetingBtns.length);
 
     // Function to open modal with dynamic content
     function openModal(title, content) {
@@ -44,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
             let editBtn = document.getElementById("editQuizBtn");
             if (editBtn) {
-                editBtn.href = `/edit-quiz/${id}/`; // Update link dynamically
+                editBtn.href = `/professor/edit-quiz/${id}/`; // Update link dynamically
             }
         
         
@@ -66,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let editBtn = document.getElementById("editQuizBtn");
             if (editBtn) {
-                editBtn.href = `/edit-project/${projectId}/`; // Update link dynamically
+                editBtn.href = `/professor/edit-project/${projectId}/`; // Update link dynamically
             }
             const content = `
                 <p><strong>ID du Projet:</strong> ${projectId}</p>
@@ -77,6 +79,37 @@ document.addEventListener("DOMContentLoaded", function () {
             openModal("Détails du Projet", content);
         });
     });
+
+    // Event listener for meeting links
+    // Event listener for meeting links
+meetingBtns.forEach(meet => {
+    meet.addEventListener("click", function (event) {
+        event.preventDefault(); // Prevent default link behavior
+
+        console.log("Meeting clicked:", meet);
+        const meetId = meet.getAttribute("data-pk");
+        const meetTitle = meet.getAttribute("data-title");
+        const meetLink = meet.getAttribute("data-link");  // Fixing variable name
+        const meetDescription = meet.getAttribute("data-description");
+
+        console.log("Meeting Data:", { meetTitle, meetDescription, meetLink });
+
+        let editBtn = document.getElementById("editQuizBtn");
+        if (editBtn) {
+            editBtn.href = `/edit-meeting/${meetId}/`; // Update link dynamically
+        }
+
+        const content = `
+            <p><strong>ID du meeting:</strong> ${meetId}</p>
+            <p><strong>Nom du meeting:</strong> ${meetTitle}</p>
+            <p><strong>Meeting link:</strong> <a href="${meetLink}" target="_blank" class="text-blue-500 underline">${meetLink}</a></p>
+            <p><strong>Description:</strong> ${meetDescription}</p>
+        `;
+
+        openModal("Détails du meeting", content);
+    });
+});
+
 
     //button of grades
     document.querySelectorAll(".save-btn").forEach(button => {
@@ -104,9 +137,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }).then(response => response.json())
               .then(data => {
                   if (data.success) {
-                      alert("Notes mises à jour avec succès !");
+                      alert("notes are updated successfuly");
                   } else {
-                      alert("Erreur lors de la mise à jour des notes.");
+                      alert("Something wrong happened while updating notes.");
                   }
               });
         });

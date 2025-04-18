@@ -1,4 +1,7 @@
 {% autoescape off %}
     Hello {{ user.first_name }},
     We are sorry to inform you that the quiz of module {{ quiz.name }} has been deleted.
+    Contact your instructor {{ quiz.created_by.user.first_name }} {{ quiz.created_by.user.last_name }} for more information
+
+    regards, IQlevel
 {% endautoescape %}

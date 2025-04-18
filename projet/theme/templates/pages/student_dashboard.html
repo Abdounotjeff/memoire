@@ -44,6 +44,7 @@
                             <h3 class="text-lg font-bold">{{ project.title }}</h3>
                             <p class="text-gray-600">{{ project.description }}</p>
                             <p><strong>Deadline:</strong> {{ project.end_time }}</p>
+                            <p class="text-gray-600">Professor:<span class ="font-bold"> {{ project.created_by.user.first_name }} {{ project.created_by.user.last_name }}</span></p>
                             <a href="{% url 'project_submission' project.id %}" class="text-blue-500">Submit Now</a>
                         </div>
                     {% endfor %}
@@ -64,6 +65,7 @@
                             <p><strong>Topic:</strong> {{ quiz.topic }}</p>
                             <p><strong>Difficulty:</strong> {{ quiz.difficulty|title }}</p>
                             <p><strong>Duration:</strong> {{ quiz.time }} minutes</p>
+                            <p class="text-gray-600">Professor:<span class ="font-bold"> {{ quiz.created_by.user.first_name }} {{ quiz.created_by.user.last_name }}</span></p>
                             <a href="{% url 'quizes:quiz-view' quiz.id %}" class="text-green-500">Take Quiz</a>
                         </div>
                     {% endfor %}
@@ -84,6 +86,8 @@
                             <p class="text-gray-600">{{ meet.description }}</p>
                             <p class="text-gray-600 font-bold">{{ meet.link }}</p>
                             <p><strong>Deadline:</strong> {{ meet.end_time }}</p>
+                            <p class="text-gray-600">Professor:<span class ="font-bold"> {{ meet.created_by.user.first_name }} {{ meet.created_by.user.last_name }}</span></p>
+                            
                         </div>
                     {% endfor %}
                 </div>

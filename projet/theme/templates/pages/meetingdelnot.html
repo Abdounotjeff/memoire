@@ -1,7 +1,7 @@
 {% autoescape off %}
     Hello {{ user.first_name }},
     We are sorry to inform you that the meeting of title {{ meet.title }} has been removed.
-    Contact your instructor for more information
+    Contact your instructor {{ meet.created_by.user.first_name }} {{ meet.created_by.user.last_name }} for more information
 
-    regards, StudyAmi
+    regards, IQlevel
 {% endautoescape %}
