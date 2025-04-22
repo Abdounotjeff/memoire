@@ -11,6 +11,7 @@ class CustomUser(AbstractUser):
         ('professor', 'professor'),
     )
     id = models.IntegerField(primary_key=True)
+    email = models.EmailField(unique=True, blank=True, null=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='professor')
     is_active = models.BooleanField(default=False)
 
