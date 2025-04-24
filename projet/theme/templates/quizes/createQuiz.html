@@ -115,6 +115,10 @@ Create Quiz
             <div class="space-y-2">
                 {{ form.as_p }}
             </div>
+            <input type="hidden" id="id_questions" name="questions_json">
+            <input type="hidden" id="id_answers" name="answers_json">
+            <input type="hidden" id="id_correct_answers" name="correct_answers_json">
+
             <button type="submit" id="saveQuizButton"
                 class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">Save Quiz</button>
         </form>
