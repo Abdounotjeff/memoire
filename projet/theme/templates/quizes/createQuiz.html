@@ -4,73 +4,7 @@
 Create Quiz
 {% endblock title %}
 {% block scripts %}
-    <script>
-        function addQuestionField() {
-            const container = document.getElementById("questions-container");
-            const questionDiv = document.createElement("div");
-            questionDiv.classList.add("bg-gray-100", "p-4", "rounded-lg", "mb-4", "shadow");
-
-            questionDiv.innerHTML = `
-                <div class="flex justify-between items-center">
-                    <input type="text" name="questions[]" placeholder="Enter question text"
-                        class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required>
-                    <button type="button" onclick="removeQuestionField(this)"
-                        class="ml-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Remove</button>
-                </div>
-                <div class="answers-container space-y-2 mt-2"></div>
-                <button type="button" onclick="addAnswerField(this)"
-                    class="mt-2 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">Add Answer</button>
-            `;
-            container.appendChild(questionDiv);
-        }
-
-        function addAnswerField(button) {
-            const answerContainer = button.previousElementSibling;
-            const questionIndex = [...button.parentElement.parentElement.children].indexOf(button.parentElement);
-            const answerIndex = answerContainer.children.length;
-
-            const answerDiv = document.createElement("div");
-            answerDiv.classList.add("flex", "items-center", "space-x-2");
-
-            answerDiv.innerHTML = `
-                <input type="text" name="answers[${questionIndex}][]" placeholder="Enter answer"
-                    class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required>
-                <input type="radio" name="correct_answers[${questionIndex}]" value="${answerIndex}" ${answerIndex === 0 ? 'checked' : ''}
-                    class="w-5 h-5 text-blue-500">
-            `;
-            answerContainer.appendChild(answerDiv);
-        }
-
-        function removeQuestionField(button) {
-            button.parentElement.parentElement.remove();
-        }
-
-        function collectFormData() {
-            const questions = [];
-            const answers = [];
-            const correctAnswers = [];
-
-            document.querySelectorAll(".question-item").forEach((questionDiv, qIndex) => {
-                const questionInput = questionDiv.querySelector("input[name='questions[]']");
-                questions.push(questionInput.value);
-
-                const answerInputs = questionDiv.querySelectorAll(`input[name='answers[${qIndex}][]']`);
-                const correctAnswerInput = questionDiv.querySelector(`input[name='correct_answers[${qIndex}]']:checked`);
-
-                answerInputs.forEach((answerInput, aIndex) => {
-                    answers.push(answerInput.value);
-                    if (aIndex === parseInt(correctAnswerInput.value)) {
-                        correctAnswers.push(aIndex);
-                    }
-                });
-            });
-
-            document.getElementById("id_questions").value = JSON.stringify(questions);
-            document.getElementById("id_answers").value = JSON.stringify(answers);
-            document.getElementById("id_correct_answers").value = JSON.stringify(correctAnswers);
-        }
+    <script>       
 
         function confirmSaveQuiz(event) {
             event.preventDefault(); // Prevent default form submission
@@ -82,7 +16,6 @@ Create Quiz
             );
 
             if (confirmation) {
-                collectFormData();
                 event.target.closest("form").submit(); // Submit the form
             }
         }
@@ -115,10 +48,6 @@ Create Quiz
             <div class="space-y-2">
                 {{ form.as_p }}
             </div>
-            <input type="hidden" id="id_questions" name="questions_json">
-            <input type="hidden" id="id_answers" name="answers_json">
-            <input type="hidden" id="id_correct_answers" name="correct_answers_json">
-
             <button type="submit" id="saveQuizButton"
                 class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">Save Quiz</button>
         </form>

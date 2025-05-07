@@ -419,8 +419,8 @@ def create_quiz(request):
             print("saved")
             # Get all students in the selected groups
             students_emails = CustomUser.objects.filter(
-            student__group__in=quiz.groups.all(),  # Get students linked to the selected groups
-            role="student",  # Ensure they are students
+                student__group__in=quiz.groups.all(),  # Get students linked to the selected groups
+                role="student",  # Ensure they are students
             ).values_list("email", flat=True)  # Extract only emails
 
             # Convert to a list (if needed)
