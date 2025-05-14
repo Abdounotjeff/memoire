@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from .forms import CreateUserForm
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from .decorators import login_required_404
 from django.forms import inlineformset_factory
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
@@ -302,9 +303,11 @@ def activ(request):
 # 📌 PROFESSOR DASHBOARD: Show Groups & Students' Grades
 @login_required
 def professor_dashboard(request):
-    if request.user.is_student:
+
+    if request.user.is_student or hasattr(request.user, 'admin'):
         messages.error(request, "You are not authorized to edit this quiz.")
         return redirect('index')
+    
     professor = Professor.objects.get(user=request.user)
     groups = professor.groups.all()
 
